@@ -1,5 +1,5 @@
 import { Button } from '@heroui/react';
-import DraggableChart from '../components/DraggableChart'
+import DraggableChart from '../../components/DraggableChart'
 import { useState } from 'react';
 
 const ChartDemo = () => {
