@@ -1,12 +1,14 @@
 package com.cs79_1.interactive_dashboard.Entity;
 
+import com.cs79_1.interactive_dashboard.Enum.Role;
 import jakarta.persistence.*;
 import java.util.List;
 
 @Entity
+@Table(name = "Users")
 public class User {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
     @Column(nullable = false)
@@ -24,8 +26,12 @@ public class User {
 //    @Column(nullable = false)
     private int ageYear;
 
-    @Column(nullable = false)
+//    @Column(nullable = false)
     private int sex; // 1 - Male 2 - Female
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.ORDINAL)
+    private Role role;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private BodyMetrics bodyMetrics;
@@ -113,6 +119,14 @@ public class User {
         this.sex = sex;
     }
 
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
+    }
+
     public BodyMetrics getBodyMetrics() {
         return bodyMetrics;
     }
@@ -160,4 +174,6 @@ public class User {
     public void setWorkoutAmounts(List<WorkoutAmount> WorkoutAmounts) {
         this.WorkoutAmounts = WorkoutAmounts;
     }
+
+
 }
