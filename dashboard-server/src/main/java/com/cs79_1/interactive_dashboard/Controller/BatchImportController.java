@@ -59,6 +59,9 @@ public class BatchImportController {
             tempFile = Paths.get(uploadTempPath, jobId + "_" + file.getOriginalFilename());
             file.transferTo(tempFile);
 
+            ImportProgress progress = new ImportProgress(jobId, 1);
+            batchImportService.initProgress(jobId, progress);
+
             Path finalTempFile = tempFile;
             CompletableFuture.runAsync(() -> {
                 try {
@@ -86,10 +89,6 @@ public class BatchImportController {
 
                 return null;
             });
-
-            while(batchImportService.getProgress(jobId) == null) {
-                Thread.sleep(500);
-            }
 
             return ResponseEntity.ok(jobId);
         } catch (Exception e) {
@@ -159,6 +158,10 @@ public class BatchImportController {
             List<FileInfo> savedFiles = saveToTempFiles(files);
 
             String jobId= UUID.randomUUID().toString();
+            
+            ImportProgress progress = new ImportProgress(jobId, 1);
+            batchImportService.initProgress(jobId, progress);
+
             CompletableFuture.runAsync(() -> {
                 try {
                     batchImportService.importMultipleWorkoutAmountDataWithProgress(savedFiles, jobId);
@@ -171,10 +174,6 @@ public class BatchImportController {
 
                 return null;
             });
-
-            while(batchImportService.getProgress(jobId) == null) {
-                Thread.sleep(500);
-            }
 
             return ResponseEntity.ok(jobId);
         } catch (Exception e) {

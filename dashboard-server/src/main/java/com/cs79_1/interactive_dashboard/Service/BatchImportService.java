@@ -12,7 +12,6 @@ import jakarta.persistence.EntityManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,7 +20,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -69,6 +67,10 @@ public class BatchImportService {
         return progressMap.get(jobId).isCompleted();
     }
 
+    public void initProgress(String jobId, ImportProgress importProgress){
+        progressMap.put(jobId, importProgress);
+    }
+
     @Transactional
     public void importIndividualAttributes(MultipartFile file) throws Exception {
         List<String[]> csvData = parseCSV(file);
@@ -89,23 +91,17 @@ public class BatchImportService {
                 saveMentalHealthAndDailyRoutine(user, row);
             } catch (Exception e){
                 entityManager.clear();
-                logger.error("Error occurs when processing row " + (i+1) + ": " + e.getMessage());
-                e.printStackTrace();
+                logger.error("Error occurs when processing row " + (i+1) + ": " + e);
             }
         }
     }
 
     @Transactional
     public void importIndividualAttributesWithProgress(Path filePath, String jobId) {
-
         try {
-
-
             List<String[]> csvData = parseCSV(filePath);
-            int totalRows = csvData.size() - 1;
-
-            ImportProgress progress = new ImportProgress(jobId, totalRows);
-            progressMap.put(jobId, progress);
+            ImportProgress progress = getProgress(jobId);
+            progress.setTotalNum(csvData.size() - 1);
 
             for(int i = 1; i < csvData.size(); i++){
                 String[] row = csvData.get(i);
@@ -130,15 +126,14 @@ public class BatchImportService {
                     entityManager.clear();
                     progress.incrementFailed();
                     progress.addError("Row " + i + ": " + e.getMessage());
-                    logger.error("Error occurs when processing row " + (i+1) + ": " + e.getMessage());
-                    e.printStackTrace();
+                    logger.error("Error occurs when processing row " + (i+1) + ": " + e);
                 }
             }
 
             progress.setCompleted(true);
             progress.setSuccess(true);
         } catch (Exception e){
-            ImportProgress progress = progressMap.get(jobId);
+            ImportProgress progress = getProgress(jobId);
             if(progress != null){
                 progress.setStatus("Failed " + e.getMessage());
                 progress.setCompleted(true);
@@ -150,8 +145,8 @@ public class BatchImportService {
     @Transactional
     public void importMultipleWorkoutAmountDataWithProgress(List<FileInfo> fileInfos, String jobId) {
         try {
-            ImportProgress progress = new ImportProgress(jobId, fileInfos.size());
-            progressMap.put(jobId, progress);
+            ImportProgress progress = getProgress(jobId);
+            progress.setTotalNum(fileInfos.size());
 
             for (int i = 0; i < fileInfos.size(); i++) {
                 FileInfo fileInfo = fileInfos.get(i);
@@ -181,7 +176,7 @@ public class BatchImportService {
             progress.setCompleted(true);
             progress.setSuccess(true);
         } catch (Exception e) {
-            ImportProgress progress = progressMap.get(jobId);
+            ImportProgress progress = getProgress(jobId);
             if(progress != null){
                 progress.setStatus("Failed " + e.getMessage());
                 progress.setCompleted(true);
@@ -252,7 +247,6 @@ public class BatchImportService {
         return user;
     }
 
-    // TODO: Methods of creating instances of metrics and save
     private void saveBodyMetrics(User user, String[] row){
         BodyMetrics bodyMetrics = new BodyMetrics(user);
 
