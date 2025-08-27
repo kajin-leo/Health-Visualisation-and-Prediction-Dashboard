@@ -14,6 +14,8 @@ interface UserContextType {
     loading: boolean
     error: string | null
     fetchUserInfo: () => Promise<void>
+    refreshUserInfo:() => Promise<void>
+    clearUserInfo:() => void
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined)
@@ -37,6 +39,16 @@ export function UserProvider({ children }: { children: ReactNode }) {
         }
     }
 
+    const refreshUserInfo = async() => {
+        await fetchUserInfo();
+    }
+
+    const clearUserInfo = () => {
+        setUser(null);
+        setLoading(false);
+        setError(null);
+    }
+
     useEffect(() => {
         const token = localStorage.getItem('token')
         if (token) {
@@ -46,8 +58,22 @@ export function UserProvider({ children }: { children: ReactNode }) {
         }
     }, [])
 
+    useEffect(() => {
+        const handleLocalStorage = (e:StorageEvent) =>{
+            if (e.key === "token") {
+                if (e.newValue) {
+                    fetchUserInfo();
+                } else {
+                    clearUserInfo();
+                }
+            }
+        }
+        window.addEventListener('storage', handleLocalStorage);
+        return () => removeEventListener('storage', handleLocalStorage);
+    }, []);
+
     return (
-        <UserContext.Provider value={{ user, loading, error, fetchUserInfo }}>
+        <UserContext.Provider value={{ user, loading, error, fetchUserInfo, refreshUserInfo, clearUserInfo }}>
             {children}
         </UserContext.Provider>
     )

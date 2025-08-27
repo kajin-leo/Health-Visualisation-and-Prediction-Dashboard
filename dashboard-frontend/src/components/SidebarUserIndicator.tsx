@@ -1,10 +1,11 @@
-import { Avatar, AvatarIcon } from "@heroui/react"
+import { Avatar, AvatarIcon, Button, Card } from "@heroui/react"
+import { forwardRef } from "react";
 
-const SideBarUserIndicator = ({ username, userAvatarUrl, ...props }: { username?: string, userAvatarUrl?: string, props?: React.ReactNode }) => {
+const SideBarUserIndicator = forwardRef(({ children, className, username, userAvatarUrl, ...props }, ref) => {
     
     
     return (
-        <div className="w-full h-max-[40px] m-2 flex gap-3 items-end">
+        <div role="button" tabIndex={0} ref={ref} className="w-full h-max-[40px] p-2 flex gap-3 items-end rounded-2xl hover:shadow-xs hover:bg-white transition-all active:bg-white active:inset-shadow-sm" {...props}>
             <div className='aspect-square'>
                 <Avatar classNames={{
                     base: 'bg-linear-to-b from-sky-700 to-sky-50',
@@ -22,6 +23,6 @@ const SideBarUserIndicator = ({ username, userAvatarUrl, ...props }: { username?
             </div>
         </div>
     );
-}
+})
 
 export default SideBarUserIndicator;

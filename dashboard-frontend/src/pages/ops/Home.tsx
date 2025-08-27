@@ -1,7 +1,8 @@
 import { Alert, Button, Input, Progress, Switch, Tab, Tabs } from "@heroui/react";
 import { useState, useRef, useEffect } from "react";
 import { apiClient } from "../../service/axios";
-import { CircleCheck, CircleX } from "lucide-react";
+import { CircleCheck, CircleX, LogOut } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const IndividualAttributesImport = () => {
     const [isLoading, setIsLoading] = useState(false);
@@ -79,7 +80,7 @@ const IndividualAttributesImport = () => {
             </Button>
             <h3>Select the CSV file for Individual Attributes</h3>
             <h4>Please note that data of duplicate participants will be covered</h4>
-            {isLoading ? <Progress aria-label="Uploading" showValueLabel={true} size="md" value={uploadProgress}/> : ''}
+            {isLoading ? <Progress aria-label="Uploading" showValueLabel={true} size="md" value={uploadProgress} /> : ''}
             {uploadedSuccessfully ? <Alert color='success' title='Imported successfully!' /> : ''}
             {uploadFailure ? <Alert color='danger' title={uploadFailureMessage} /> : ''}
         </div>
@@ -166,7 +167,7 @@ const BatchWorkoutImport = () => {
             </Button>
             <h3>Select the CSV files for Workout Data</h3>
             <h4>Please note that data of duplicate participants will be covered</h4>
-            {isLoading ? <Progress aria-label="Uploading" showValueLabel={true} size="md" value={uploadProgress}/> : ''}
+            {isLoading ? <Progress aria-label="Uploading" showValueLabel={true} size="md" value={uploadProgress} /> : ''}
             {uploadedSuccessfully ? <Alert color='success' title='Imported successfully!' /> : ''}
             {uploadFailure ? <Alert color='danger' title={uploadFailureMessage} /> : ''}
         </div>
@@ -244,21 +245,32 @@ const TestConnection = () => {
 }
 
 const Home = () => {
+    const navigate = useNavigate();
+
+    const logout = () => {
+        localStorage.clear();
+        navigate('/login');
+    }
 
     return (
-        <div className="bg-gradient-to-b from-gray-900/40 to-gray-950/30 backdrop-blur-lg rounded-2xl outline-2 outline-gray-300/20 items-center flex flex-col p-4 select-none transition-all">
-            <h1 className="text-xl font-semibold m-2">Batch Import</h1>
-            <Tabs variant='underlined'>
-                <Tab key='individual-attributes' title='Individual Attributes'>
-                    <IndividualAttributesImport />
-                </Tab>
-                <Tab key='workout' title='Workout'>
-                    <WorkoutImport />
-                </Tab>
-            </Tabs>
-            <div className="flex justify-end w-full">
-                <TestConnection />
+        <div className="w-full h-full flex flex-col items-center justify-center">
+            <div className="bg-gradient-to-b from-gray-900/40 to-gray-950/30 backdrop-blur-lg rounded-2xl outline-2 outline-gray-300/20 items-center flex flex-col p-4 select-none transition-all">
+                <h1 className="text-xl font-semibold m-2">Batch Import</h1>
+                <Tabs variant='underlined'>
+                    <Tab key='individual-attributes' title='Individual Attributes'>
+                        <IndividualAttributesImport />
+                    </Tab>
+                    <Tab key='workout' title='Workout'>
+                        <WorkoutImport />
+                    </Tab>
+                </Tabs>
+                <div className="flex justify-end w-full">
+                    <TestConnection />
+                </div>
             </div>
+            <Button color="danger" className="fixed bottom-5 left-5" onPress={logout}>
+                <LogOut />Sign Out
+            </Button>
         </div>
     )
 }

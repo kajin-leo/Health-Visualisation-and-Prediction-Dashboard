@@ -1,5 +1,5 @@
-import { Button } from '@heroui/react'
-import { Cog, Gauge, CircleQuestionMark, ChartLine } from 'lucide-react'
+import { Button, Listbox, ListboxItem, Popover, PopoverContent, PopoverTrigger, User } from '@heroui/react'
+import { Cog, Gauge, CircleQuestionMark, ChartLine, LogOut, SquareUser } from 'lucide-react'
 import SidebarMenuItem from './SidebarMenuItem'
 import { useState, useEffect, useRef } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
@@ -53,6 +53,11 @@ function SideBar({ className, ...props }: { className?: string, props?: React.Re
         return location.pathname === itemUrl;
     };
 
+    const logout = () => {
+        localStorage.clear();
+        navigate('/login');
+    }
+
     return (
         <div id='sidebar-container' className={`w-full h-full flex flex-col justify-between ${className || ''}`}>
             <div id='header-area' className='flex flex-col gap-5'>
@@ -77,7 +82,18 @@ function SideBar({ className, ...props }: { className?: string, props?: React.Re
                         <SidebarMenuItem item={item} key={item.title} isSelected={isItemSelected(item.url)} />
                     ))}
                 </div>
-                <SideBarUserIndicator username={user ? `${user.firstName} ${user.lastName}` : ''} />
+                <Popover showArrow placement='right'>
+                    <PopoverTrigger>
+                        <SideBarUserIndicator role="button" username={user ? `${user.firstName} ${user.lastName}` : ''} />
+                    </PopoverTrigger>
+                    <PopoverContent>
+                        <Listbox>
+                            <ListboxItem key='profile' startContent={<SquareUser />}>My Profile</ListboxItem>
+                            <ListboxItem key='logout' className='text-danger' color='danger' startContent={<LogOut />} onPress={logout}>Sign Out</ListboxItem>
+                        </Listbox>
+                    </PopoverContent>
+                </Popover>
+                
             </div>
         </div>
     );
