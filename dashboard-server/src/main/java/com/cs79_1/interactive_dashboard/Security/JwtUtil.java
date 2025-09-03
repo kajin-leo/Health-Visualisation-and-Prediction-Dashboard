@@ -1,4 +1,4 @@
-package com.cs79_1.interactive_dashboard.Service;
+package com.cs79_1.interactive_dashboard.Security;
 
 import com.cs79_1.interactive_dashboard.Entity.User;
 import jakarta.annotation.PostConstruct;
@@ -15,14 +15,14 @@ import java.time.temporal.ChronoUnit;
 import java.util.Map;
 
 @Service
-public class JwtService {
+public class JwtUtil {
     @Autowired
     private JwtEncoder jwtEncoder;
 
     @Autowired
     private JwtDecoder jwtDecoder;
 
-    private static final Logger logger = LoggerFactory.getLogger(JwtService.class);
+    private static final Logger logger = LoggerFactory.getLogger(JwtUtil.class);
 
     @PostConstruct
     public void checkInjection() {

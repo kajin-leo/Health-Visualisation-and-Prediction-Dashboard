@@ -6,9 +6,8 @@ import com.cs79_1.interactive_dashboard.DTO.RegisterRequest;
 import com.cs79_1.interactive_dashboard.Entity.User;
 import com.cs79_1.interactive_dashboard.Enum.Role;
 import com.cs79_1.interactive_dashboard.Repository.UserRepository;
-import com.cs79_1.interactive_dashboard.Service.JwtService;
+import com.cs79_1.interactive_dashboard.Security.JwtUtil;
 import jakarta.validation.Valid;
-import org.apache.coyote.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +34,7 @@ public class AuthController {
     private PasswordEncoder passwordEncoder;
 
     @Autowired
-    private JwtService jwtService;
+    private JwtUtil jwtUtil;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest) {
@@ -51,8 +50,8 @@ public class AuthController {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Invalid username or password"));
             }
 
-            String accessToken = jwtService.generateToken(user);
-            String refreshToken = jwtService.generateRefreshToken(user);
+            String accessToken = jwtUtil.generateToken(user);
+            String refreshToken = jwtUtil.generateRefreshToken(user);
 
             LoginResponse loginResponse = new LoginResponse(
                     accessToken,
@@ -107,11 +106,11 @@ public class AuthController {
                 refreshToken = refreshToken.substring(7);
             }
 
-            if (!jwtService.isTokenValid(refreshToken)) {
+            if (!jwtUtil.isTokenValid(refreshToken)) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Invalid refresh token"));
             }
 
-            String username = jwtService.extractUsername(refreshToken);
+            String username = jwtUtil.extractUsername(refreshToken);
             Optional<User> userOptional = userRepository.findByUsername(username);
 
             if (userOptional.isEmpty()) {
@@ -119,7 +118,7 @@ public class AuthController {
             }
 
             User user = userOptional.get();
-            String newAccessToken = jwtService.generateToken(user);
+            String newAccessToken = jwtUtil.generateToken(user);
 
             Map<String, Object> response = new HashMap<>();
             response.put("accessToken", newAccessToken);
@@ -139,12 +138,12 @@ public class AuthController {
                 token = token.substring(7);
             }
 
-            if (jwtService.isTokenValid(token)) {
+            if (jwtUtil.isTokenValid(token)) {
                 Map<String, Object> response = new HashMap<>();
                 response.put("valid", true);
-                response.put("username", jwtService.extractUsername(token));
-                response.put("userId", jwtService.extractUserId(token));
-                response.put("role", jwtService.extractRole(token));
+                response.put("username", jwtUtil.extractUsername(token));
+                response.put("userId", jwtUtil.extractUserId(token));
+                response.put("role", jwtUtil.extractRole(token));
                 return ResponseEntity.ok(response);
             } else {
                 return ResponseEntity.ok(Map.of("valid", false));
