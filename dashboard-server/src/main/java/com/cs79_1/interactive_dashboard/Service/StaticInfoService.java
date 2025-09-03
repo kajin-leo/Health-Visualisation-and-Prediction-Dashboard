@@ -2,14 +2,13 @@ package com.cs79_1.interactive_dashboard.Service;
 
 import com.cs79_1.interactive_dashboard.Entity.User;
 import com.cs79_1.interactive_dashboard.Repository.BodyMetricsRepository;
-import com.cs79_1.interactive_dashboard.Repository.UserRepository;
+import com.cs79_1.interactive_dashboard.Repository.MentalHealthAndDailyRoutineRepository;
 import com.cs79_1.interactive_dashboard.Repository.WeightMetricsRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -22,6 +21,9 @@ public class StaticInfoService {
 
     @Autowired
     private WeightMetricsRepository weightMetricsRepository;
+
+    @Autowired
+    private MentalHealthAndDailyRoutineRepository mentalHealthAndDailyRoutineRepository;
 
     private final static Logger logger = LoggerFactory.getLogger(StaticInfoService.class);
 
@@ -150,4 +152,24 @@ public class StaticInfoService {
             throw new RuntimeException(e.getMessage());
         }
     }
+    private com.cs79_1.interactive_dashboard.Entity.MentalHealthAndDailyRoutine loadSleepRow(long userId) {
+        return mentalHealthAndDailyRoutineRepository.findByUser_Id(userId)
+                .orElseThrow(() -> new RuntimeException("No sleep row for user " + userId));
+    }
+
+
+
+    public double getSchoolNightAvgHours(long userId) {
+        return loadSleepRow(userId).getWeekdaySleepingAvgDuration();
+    }
+
+
+    public double getWeekendNightAvgHours(long userId) {
+        return loadSleepRow(userId).getWeekendSleepingAvgDuration();
+    }
+
+    public double getTotalWeekHours(long userId) {
+        return loadSleepRow(userId).getTotalSleepingDuration();
+    }
+
 }

@@ -1,6 +1,7 @@
 package com.cs79_1.interactive_dashboard.Controller;
 
 import com.cs79_1.interactive_dashboard.DTO.WeightStatus;
+import com.cs79_1.interactive_dashboard.DTO.SleepSummary;
 import com.cs79_1.interactive_dashboard.Security.SecurityUtils;
 import com.cs79_1.interactive_dashboard.Service.StaticInfoService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,5 +63,21 @@ public class StaticInfoController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("No such user id");
         }
     }
+    @GetMapping("/sleep-summary")
+    public ResponseEntity<SleepSummary> getSleepSummary() {
+        long userId = SecurityUtils.getCurrentUserId();
 
+        double school = staticInfoService.getSchoolNightAvgHours(userId);
+        double weekend = staticInfoService.getWeekendNightAvgHours(userId);
+        double week = staticInfoService.getTotalWeekHours(userId);
+
+        int thisWeekAvgMin = (int) Math.round((week / 7.0) * 60.0);
+
+        SleepSummary dto = new SleepSummary();
+        dto.setThisWeekAvgMin(thisWeekAvgMin);
+        dto.setSchoolNightAvgHrs(school);
+        dto.setWeekendNightAvgHrs(weekend);
+
+        return ResponseEntity.ok(dto);
+    }
 }

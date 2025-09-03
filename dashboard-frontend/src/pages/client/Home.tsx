@@ -1,6 +1,7 @@
 import {Button, Card, CardBody, CardFooter} from '@heroui/react'
 import DashboardCard from '../../components/DashboardCard';
 import WeightMetrics from '../../components/DashboardCardContent/WeightMetrics/WeightMetrics';
+import SleepGauges from "../../components/DashboardCardContent/Sleep/SleepGauges.tsx";
 
 const Home = () => {
     return(
@@ -22,7 +23,7 @@ const Home = () => {
             </DashboardCard>
 
             <DashboardCard id='sleeping duration' className='md:col-span-2 lg:col-span-3'>
-                Sleeping
+                <SleepGauges />
             </DashboardCard>
 
             <DashboardCard id='lsmz' className='md:col-span-2 lg:col-span-7'>
