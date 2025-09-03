@@ -1,9 +1,13 @@
 package com.cs79_1.interactive_dashboard.Service;
 
 import com.cs79_1.interactive_dashboard.Entity.User;
+import com.cs79_1.interactive_dashboard.Entity.BodyComposition;
 import com.cs79_1.interactive_dashboard.Repository.BodyMetricsRepository;
+import com.cs79_1.interactive_dashboard.Repository.BodyCompositionRepository;
 import com.cs79_1.interactive_dashboard.Repository.MentalHealthAndDailyRoutineRepository;
 import com.cs79_1.interactive_dashboard.Repository.WeightMetricsRepository;
+import com.cs79_1.interactive_dashboard.DTO.BodyCompositionSummary;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +28,9 @@ public class StaticInfoService {
 
     @Autowired
     private MentalHealthAndDailyRoutineRepository mentalHealthAndDailyRoutineRepository;
+
+    @Autowired
+    private BodyCompositionRepository bodyCompositionRepository;
 
     private final static Logger logger = LoggerFactory.getLogger(StaticInfoService.class);
 
@@ -170,6 +177,28 @@ public class StaticInfoService {
 
     public double getTotalWeekHours(long userId) {
         return loadSleepRow(userId).getTotalSleepingDuration();
+    }
+    public BodyCompositionSummary getBodyCompositionSummary(long userId) {
+        BodyComposition bc = bodyCompositionRepository.findByUser_Id(userId)
+                .orElseThrow(() -> new RuntimeException("No body composition for user " + userId));
+
+        double fat = bc.getFatPercentage();
+        double muscle = bc.getMuscleAmount();
+        double water = bc.getWaterPercentage();
+
+        double sum = fat + muscle + water;
+        if (sum > 100.0 && sum > 0) {
+            fat    = fat / sum * 100.0;
+            muscle = muscle / sum * 100.0;
+            water  = water  / sum * 100.0;
+        }
+
+        BodyCompositionSummary dto = new BodyCompositionSummary();
+        dto.setFatPct(fat);
+        dto.setMusclePct(muscle);
+        dto.setWaterPct(water);
+
+        return dto;
     }
 
 }

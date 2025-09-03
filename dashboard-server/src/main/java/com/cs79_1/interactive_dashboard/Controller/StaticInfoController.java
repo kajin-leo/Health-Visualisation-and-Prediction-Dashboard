@@ -1,6 +1,7 @@
 package com.cs79_1.interactive_dashboard.Controller;
 
 import com.cs79_1.interactive_dashboard.DTO.WeightStatus;
+import com.cs79_1.interactive_dashboard.DTO.BodyCompositionSummary;
 import com.cs79_1.interactive_dashboard.DTO.SleepSummary;
 import com.cs79_1.interactive_dashboard.Security.SecurityUtils;
 import com.cs79_1.interactive_dashboard.Service.StaticInfoService;
@@ -80,4 +81,13 @@ public class StaticInfoController {
 
         return ResponseEntity.ok(dto);
     }
+
+
+    @GetMapping("/body-composition")
+    public ResponseEntity<BodyCompositionSummary> getBodyComposition() {
+        long userId = SecurityUtils.getCurrentUserId();
+        BodyCompositionSummary dto = staticInfoService.getBodyCompositionSummary(userId);
+        return ResponseEntity.ok(dto);
+    }
+
 }

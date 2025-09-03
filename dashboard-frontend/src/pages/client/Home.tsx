@@ -2,7 +2,7 @@ import {Button, Card, CardBody, CardFooter} from '@heroui/react'
 import DashboardCard from '../../components/DashboardCard';
 import WeightMetrics from '../../components/DashboardCardContent/WeightMetrics/WeightMetrics';
 import SleepGauges from "../../components/DashboardCardContent/Sleep/SleepGauges.tsx";
-
+import FatMuscleWaterCard from "../../components/DashboardCardContent/Body/FatMuscleWaterCard.tsx";
 const Home = () => {
     return(
         <div className='w-full h-full py-4 grid grid-cols-1 auto-rows-[calc((100%-var(--spacing)*8)/3)] md:grid-cols-6 lg:grid-cols-12 gap-4 col-span-2 row-span-3 overflow-y-scroll pl-2 pr-4'>
@@ -11,7 +11,7 @@ const Home = () => {
             </DashboardCard>
 
             <DashboardCard id='percentages' className='md:col-span-4 lg:col-span-4'>
-                Body Composition
+                <FatMuscleWaterCard />
             </DashboardCard>
 
             <DashboardCard id='Basic' className='row-span-2 md:col-span-2 lg:col-span-4'>
