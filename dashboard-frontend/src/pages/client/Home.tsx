@@ -2,7 +2,11 @@ import {Button, Card, CardBody, CardFooter} from '@heroui/react'
 import DashboardCard from '../../components/DashboardCard';
 import WeightMetrics from '../../components/DashboardCardContent/WeightMetrics/WeightMetrics';
 import SleepGauges from "../../components/DashboardCardContent/Sleep/SleepGauges.tsx";
+<<<<<<< HEAD
 import FoodIntake from "../../components/DashboardCardContent/FoodIntake/FoodIntake.tsx";
+=======
+import BMI from "../../components/BmiCard.tsx"
+>>>>>>> bf8c32a42a42c2a7f73bebfd5b307ee41a5ba678
 import FatMuscleWaterCard from "../../components/DashboardCardContent/Body/FatMuscleWaterCard.tsx";
 const Home = () => {
     return(
@@ -16,7 +20,7 @@ const Home = () => {
             </DashboardCard>
 
             <DashboardCard id='Basic' className='row-span-2 md:col-span-2 lg:col-span-4'>
-                BMI
+                <BMI />
             </DashboardCard>
 
             <DashboardCard id='wlgr wlgx' className='md:col-span-2 lg:col-span-5'>
