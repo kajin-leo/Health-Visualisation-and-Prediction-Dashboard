@@ -13,6 +13,13 @@ RUN pip install flask gunicorn numpy pandas scikit-learn tqdm
 WORKDIR /app
 COPY . .
 
+RUN echo "=== 查看 /app 目录结构 ===" && \
+    ls -la /app && \
+    echo "=== 查看 /app/serving 目录结构 ===" && \
+    ls -la /app/serving/ && \
+    echo "=== 查看 app.py 内容前几行 ===" && \
+    head -10 /app/serving/app.py
+
 # 暴露端口
 EXPOSE 5000
 

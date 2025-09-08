@@ -3,7 +3,7 @@ name: cs79-interactive-dashboard
 services:
   postgres:
     image: postgres:15-alpine
-    container_name: cs79-postgres
+    container_name: cs79-prod-postgres
     environment:
       - POSTGRES_DB=cs79-dashboard
       - POSTGRES_USER=cs79dashboard
@@ -11,7 +11,7 @@ services:
     ports:
       - "5480:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - cs79_postgres_data:/var/lib/postgresql/data
       - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U cs79dashboard -d cs79-dashboard"]
@@ -24,12 +24,12 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: cs79-redis
+    container_name: cs79-prod-redis
     command: redis-server --appendonly yes --requirepass interactivedashboard_cs79-1
     ports:
       - "5481:6379"
     volumes:
-      - redis_data:/data
+      - cs79_redis_data:/data
     healthcheck:
       test: ["CMD", "redis-cli", "--no-auth-warning", "-a", "interactivedashboard_cs79-1", "ping"]
       interval: 30s
@@ -41,7 +41,7 @@ services:
 
   rabbitmq:
     image: rabbitmq:3.12-management-alpine
-    container_name: cs79-rabbitmq
+    container_name: cs79-prod-rabbitmq
     hostname: cs79-rabbitmq
     environment:
       - RABBITMQ_DEFAULT_USER=cs79dashboard
@@ -51,7 +51,7 @@ services:
       - "5482:5672"    # AMQP Port
       - "5483:15672"   # Management Portal
     volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
+      - cs79_rabbitmq_data:/var/lib/rabbitmq
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "ping"]
       interval: 30s
@@ -63,9 +63,9 @@ services:
 
   backend:
     build:
-      context: ./
+      context: ./dashboard-server
       dockerfile: Dockerfile
-    container_name: cs79-backend
+    container_name: cs79-prod-backend
     ports:
       - "5484:8080"
     environment:
@@ -107,12 +107,15 @@ services:
     build: 
       context: ./dashboard-ml
       dockerfile: Dockerfile
-    container_name: cs79-ml-service
+    container_name: cs79-prod-ml-service
     ports:
       - "5485:5000"
     volumes:
-      - ./serving:/app/serving
-      - ./checkpoints:/app/checkpoints
+      - ./dashboard-ml/serving:/app/serving
+      - ./dashboard-ml/checkpoints:/app/checkpoints
+    # environment:
+    #   - PYTHONPATH=/app
+    # working_dir: /app/serving
     depends_on:
       - backend
     deploy:
@@ -132,14 +135,14 @@ services:
     networks:
       - cs79-network
     restart: unless-stopped
-    command: ["gunicorn", "-b", "0.0.0.0:5000", "app:app"]
+    # command: ["gunicorn", "-b", "0.0.0.0:5000", "serving.app:app"]
 
   frontend:
     build: 
       context: ./dashboard-frontend
       dockerfile: Dockerfile
       target: production
-    container_name: cs79-frontend
+    container_name: cs79-prod-frontend
     ports:
       - "5486:80"
     environment:
@@ -157,11 +160,11 @@ services:
     restart: unless-stopped
 
 volumes:
-  postgres_data:
+  cs79_postgres_data:
     driver: local
-  redis_data:
+  cs79_redis_data:
     driver: local
-  rabbitmq_data:
+  cs79_rabbitmq_data:
     driver: local
 
 networks:

@@ -8,7 +8,9 @@ RUN npm ci --only=production
 
 COPY . .
 
-RUN npm run build
+RUN npm i
+
+RUN npx vite build
 
 FROM nginx:alpine AS production
 

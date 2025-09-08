@@ -3,7 +3,7 @@ name: cs79-interactive-dashboard-server-dev
 services:
   postgres:
     image: postgres:15-alpine
-    container_name: cs79-postgres
+    container_name: cs79-dev-postgres
     environment:
       - POSTGRES_DB=cs79-dashboard
       - POSTGRES_USER=cs79dashboard
@@ -24,7 +24,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: cs79-redis
+    container_name: cs79-dev-redis
     command: redis-server --appendonly yes --requirepass interactivedashboard_cs79-1
     ports:
       - "5481:6379"
@@ -41,7 +41,7 @@ services:
 
   rabbitmq:
     image: rabbitmq:3.12-management-alpine
-    container_name: cs79-rabbitmq
+    container_name: cs79-dev-rabbitmq
     hostname: cs79-rabbitmq
     environment:
       - RABBITMQ_DEFAULT_USER=cs79dashboard
