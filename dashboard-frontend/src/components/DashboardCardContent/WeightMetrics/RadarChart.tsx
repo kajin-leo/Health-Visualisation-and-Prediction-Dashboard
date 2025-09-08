@@ -65,7 +65,7 @@ const RadarChart: React.FC<RadarChartProps> = ({
         } else {
             r = Math.round(255 * (normalizedValue - 0.5) * 2);
             g = Math.round(255 * (1 - (normalizedValue - 0.5) * 2));
-            b = 0;
+            b = Math.round(255 * (1 - (normalizedValue - 0.5) * 2));
         }
         if (isBorder) {
             r = Math.round(r * 0.7); 
@@ -154,7 +154,7 @@ const RadarChart: React.FC<RadarChartProps> = ({
     };
     const options: ChartOptions<'radar'> = {
         responsive: true,
-        maintainAspectRatio: false,
+        maintainAspectRatio: true,
         aspectRatio: 1,
         plugins: {
             // title: {
@@ -192,6 +192,7 @@ const RadarChart: React.FC<RadarChartProps> = ({
                 },
                 ticks: {
                     backdropColor: 'transparent',
+                    display:false
                 },
                 max: Math.ceil(Math.max(data.iotf, data.cachera, data.oms, data.cdc)),
                 min: Math.floor(Math.min(data.iotf, data.cachera, data.oms, data.cdc))
@@ -200,10 +201,8 @@ const RadarChart: React.FC<RadarChartProps> = ({
     };
 
     return (
-        <div className="min-w-0 h-full">
-            <div className='min-h-0 h-full min-w-0'>
-                <Radar data={chartData} options={options} />
-            </div>
+        <div className="w-full h-full">
+            <Radar data={chartData} options={options} />
         </div>
     );
 };

@@ -2,6 +2,8 @@ import { Clock } from 'lucide-react';
 import { apiClient } from '../../../service/axios';
 import { useEffect, useState, useRef } from 'react';
 import RadarChart from './RadarChart';
+import { Tab, Tabs } from '@heroui/react';
+import ValueIndicatorBar from './ValueIndicatorBar';
 // import background from '../../assets/DataAcknowledgeBG.png'
 
 interface ZScores {
@@ -111,88 +113,91 @@ const WeightMetrics = () => {
         fetchWeightStatus();
     }, []);
 
-    const metrics = ['IOTF', 'Cachera', 'OMS', 'CDC'];
+    const metrics = [
+        {
+            name: 'IOTF',
+            id: 0
+        }, {
+            name: 'Cachera',
+            id: 1
+        }, {
+            name: 'OMS',
+            id: 2
+        }, {
+            name: 'CDC',
+            id: 3
+        }
+    ];
+    const valueRange = {
+        L: {
+            min: -5,
+            max: 5
+        },
+        M: {
+            min: 2,
+            max: 90
+        },
+        S: {
+            min: 0,
+            max: 0.3
+        },
+        P: {
+            min: 0,
+            max: 100
+        }
+    }
     const vars = ['L', 'M', 'S'];
     const decimalCount = 2;
 
     return (
-        <div className='w-full h-full justify-between gap-2 flex flex-col'>
-            <h1 className="text-2xl mt-2 ml-2 flex-shrink-0">
-                Weight Status
-            </h1>
-            <div className='h-full flex justify-between items-center gap-2 overflow-hidden'>
-                {
-                    zScores && (
+        <div className='w-full h-full justify-between flex flex-col overflow-visible'>
+            <div className='flex justify-between items-baseline'>
+                <h1 className="text-2xl mt-2 ml-2 flex-shrink-0">
+                    Weight Status
+                </h1>
+                <div className='flex gap-2 text-sm bg-white p-1 px-2 rounded-full shadow-md/20'>
+                    <div className='flex items-center gap-1'>
+                        <div className='bg-yellow-400 w-4 h-4 rounded-full' />
+                        <h4>Low</h4>
+                    </div>
+                    <div className='flex items-center gap-1'>
+                        <div className='bg-sky-600 w-4 h-4 rounded-full' />
+                        <h4>Good</h4>
+                    </div>
+                    <div className='flex items-center gap-1'>
+                        <div className='bg-red-600 w-4 h-4 rounded-full' />
+                        <h4>High</h4>
+                    </div>
+                </div>
+            </div>
+            
+            <div className='flex-1 flex gap-0 overflow-hidden min-h-0'>
+                <div className='aspect-square h-full flex-shrink-0'>
+                    {zScores && (
                         <RadarChart data={zScores} title='Z-Score' />
-                    )
-                }
-                <div className='flex flex-col gap-0.5'>
+                    )}
+                </div>
+
+                <div className='flex-1 h-full min-w-0 flex-col overflow-visible'>
                     {
-                        weightMetric != null ? metrics.map((name) => {
-                            return (
-                                <div className='flex flex-col justify-start'>
-                                    <h2 className='text-[15px] font-bold'>{name}</h2>
-                                    <div className='flex justify-between items-center gap-2'>
+                        weightMetric && <Tabs items={metrics} className='h-full items-center flex-1' variant={'light'} isVertical={false} placement='end' size='sm' classNames={{base: 'h-full', panel:'h-full', tabContent:'h-full w-full', tabList:'flex-shrink-0', tabWrapper:'h-full items-center'}}>
+                            {(item) => (
+                                <Tab key={item.id} title={item.name} className='w-full h-full' >
+                                    <div className='flex items-center justify-between flex-col w-full h-full'>
                                         {
                                             vars.map((varName) => {
-                                                return (<h3 className='text-sm'>L: {weightMetric[name.toLowerCase() + varName].toFixed(decimalCount)}</h3>)
+                                                return (
+                                                    <ValueIndicatorBar min={valueRange[varName].min} max={valueRange[varName].max} currentVal={weightMetric[item.name.toLowerCase() + varName].toFixed(decimalCount)} title={varName} />
+                                                    // <h3 className='text-sm'>{varName}: {weightMetric[item.name.toLowerCase() + varName].toFixed(decimalCount)}</h3>
+                                                )
                                             })
                                         }
-                                        <h3 className='text-sm'>Percentile: {weightMetric[name.toLowerCase() + 'P'].toFixed(decimalCount)}</h3>
-                                        <h3 className='text-sm'>Comment: {weightMetric[name.toLowerCase() + 'C']}</h3>
+                                        <ValueIndicatorBar min={valueRange.P.min} max={valueRange.P.max} currentVal={weightMetric[item.name.toLowerCase() + 'P'].toFixed(decimalCount)} title={'Percentile(%)'} />
+                                        <h3 className='text-sm'>Comment: {weightMetric[item.name.toLowerCase() + 'C']}</h3>
                                     </div>
-                                </div>
-                            )
-                        }) : ''
-                        /*
-                        weightMetric && (
-                            <>
-                                <div className='flex flex-col justify-start'>
-                                    <h2 className='text-l font-bold'>IOTF</h2>
-                                    <div className='flex justify-between items-center gap-2'>
-                                        <h3 className='text-sm'>L: {weightMetric.iotfL.toFixed(decimalCount)}</h3>
-                                        <h3 className='text-sm'>M: {weightMetric.iotfM.toFixed(decimalCount)}</h3>
-                                        <h3 className='text-sm'>S: {weightMetric.iotfS.toFixed(decimalCount)}</h3>
-                                        <h3 className='text-sm'>Percentile: {weightMetric.iotfP.toFixed(decimalCount)}</h3>
-                                    </div>
-                                    <h3 className='text-sm'>Comment: {weightMetric.iotfC}</h3>
-                                </div>
-
-                                <div className='flex flex-col justify-start'>
-                                    <h2 className='text-l font-bold'>Cachera</h2>
-                                    <div className='flex justify-between items-center gap-2'>
-                                        <h3>L: {weightMetric.cacheraL.toFixed(decimalCount)}</h3>
-                                        <h3>M: {weightMetric.cacheraM.toFixed(decimalCount)}</h3>
-                                        <h3>S: {weightMetric.cacheraS.toFixed(decimalCount)}</h3>
-                                        <h3>Percentile: {weightMetric.cacheraP.toFixed(decimalCount)}</h3>
-                                    </div>
-                                    <h3>Comment: {weightMetric.cacheraC}</h3>
-                                </div>
-
-                                <div className='flex flex-col justify-start'>
-                                    <h2 className='text-l font-bold'>OMS</h2>
-                                    <div className='flex justify-between items-center gap-2'>
-                                        <h3>L: {weightMetric.omsL.toFixed(decimalCount)}</h3>
-                                        <h3>M: {weightMetric.omsM.toFixed(decimalCount)}</h3>
-                                        <h3>S: {weightMetric.omsS.toFixed(decimalCount)}</h3>
-                                        <h3>Percentile: {weightMetric.omsP.toFixed(decimalCount)}</h3>
-                                    </div>
-                                    <h3>Comment: {weightMetric.omsC}</h3>
-                                </div>
-
-                                <div className='flex flex-col justify-start'>
-                                    <h2 className='text-l font-bold'>CDC</h2>
-                                    <div className='flex justify-between items-center gap-2'>
-                                        <h3>L: {weightMetric.cdcL.toFixed(decimalCount)}</h3>
-                                        <h3>M: {weightMetric.cdcM.toFixed(decimalCount)}</h3>
-                                        <h3>S: {weightMetric.cdcS.toFixed(decimalCount)}</h3>
-                                        <h3>Percentile: {weightMetric.cdcP.toFixed(decimalCount)}</h3>
-                                    </div>
-                                    <h3>Comment: {weightMetric.cdcC}</h3>
-                                </div>
-                            </>
-                        )
-                            */
+                                </Tab>
+                            )}
+                        </Tabs>
                     }
                 </div>
             </div>

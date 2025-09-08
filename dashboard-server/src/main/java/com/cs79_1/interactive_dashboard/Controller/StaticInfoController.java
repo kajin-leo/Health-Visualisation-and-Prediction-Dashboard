@@ -2,15 +2,25 @@ package com.cs79_1.interactive_dashboard.Controller;
 
 import com.cs79_1.interactive_dashboard.DTO.WeightStatus;
 import com.cs79_1.interactive_dashboard.DTO.BodyCompositionSummary;
-import com.cs79_1.interactive_dashboard.DTO.SleepSummary;
+import com.cs79_1.interactive_dashboard.DTO.FoodIntakeSummary;
+import com.cs79_1.interactive_dashboard.DTO.FoodIntakeResultDto;
+import com.cs79_1.interactive_dashboard.DTO.SleepSummary;       
+import com.cs79_1.interactive_dashboard.DTO.FoodIntakeSummary;  
 import com.cs79_1.interactive_dashboard.Security.SecurityUtils;
 import com.cs79_1.interactive_dashboard.Service.StaticInfoService;
+import com.cs79_1.interactive_dashboard.Service.StaticInfoService.FoodIntakeService;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @Controller
 @RequestMapping("/api/static")
@@ -89,5 +99,42 @@ public class StaticInfoController {
         BodyCompositionSummary dto = staticInfoService.getBodyCompositionSummary(userId);
         return ResponseEntity.ok(dto);
     }
+
+    @GetMapping("/body-composition/wlgr-wlgx")
+    public ResponseEntity<Map<String, Double>> getWlgrWlgx() {
+        long userId = SecurityUtils.getCurrentUserId();
+        BodyCompositionSummary dto = staticInfoService.getBodyCompositionSummary(userId);
+
+        Map<String, Double> result = new HashMap<>();
+        result.put("wlgr625", dto.getWlgr625());
+        result.put("wlgr50", dto.getWlgr50());
+        result.put("wlgx625", dto.getWlgx625());
+        result.put("wlgx50", dto.getWlgx50());
+
+        return ResponseEntity.ok(result);
+}
+
+    
+    
+    @RestController
+    @RequestMapping("/api/food-intake")
+    public class FoodIntakeController {
+
+    @GetMapping("/food-intake")
+    public ResponseEntity<FoodIntakeResultDto> getFoodIntake() {
+    long userId = SecurityUtils.getCurrentUserId();
+    FoodIntakeResultDto dto = foodIntakeService.calculateFoodIntake(userId);
+    return ResponseEntity.ok(dto);
+}
+    @Autowired
+    private FoodIntakeService foodIntakeService;
+
+    @GetMapping("/rings")
+    public FoodIntakeResultDto getFoodIntakeRings() {
+        long userId = SecurityUtils.getCurrentUserId();
+        return foodIntakeService.calculateFoodIntake(userId);
+    }
+}
+
 
 }
