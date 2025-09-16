@@ -6,6 +6,7 @@ import { Chart } from "chart.js/auto";
 import WorkoutDailyDetailsChart from "./WorkoutDailyDetailsChart";
 import { time } from "framer-motion";
 import WorkoutTimeOfDayChart from "./WorkoutTimeOfDayChart";
+import { apiClient } from "../../../service/axios";
 
 type DailyDetail = {
     timeSegmentStarting: string;
@@ -69,18 +70,47 @@ const WorkoutDetails = ({ overallMock, dailyMock, timeofdayMock }: { overallMock
     const [dayOfWeek, setDayOfWeek] = useState(0);
     const [timeOfDay, setTimeOfDay] = useState(0);
 
-    console.log('time of day data mock count', timeofdayMock?.length);
+    const fetchOverallData = async () => {
+        try {
+            const response = await apiClient.get('/static/workout-overview');
+            setOverallData(response.data.dataList);
+        } catch (error) {
+            console.error('Error fetching workout data:', error);
+        }
+    };
+    
+    const fetchDailyData = async (day: number) => {
+        try {
+            const response = await apiClient.get(`/workout/daily/${day}`);
+            setDailyData(response.data.dataList);
+        } catch (error) {
+            console.error('Error fetching daily workout data:', error);
+        }
+    };
+
+    const fetchTimeOfDayData = async (time: number) => {
+        try {
+            const response = await apiClient.get(`/workout/timeofday/${time}`);
+            setTimeOfDayData(response.data.dataList);
+        } catch (error) {
+            console.error('Error fetching time of day workout data:', error);
+        }
+    };
+
 
     useEffect(() => {
-        setOverallData(overallMock!);
+        if(!overallMock) fetchOverallData();
+        else setOverallData(overallMock!);
     }, [overallMock]);
 
     useEffect(() => {
-        setDailyData(dailyMock![dayOfWeek]);
+        if(!dailyMock) fetchDailyData(dayOfWeek);
+        else setDailyData(dailyMock![dayOfWeek]);
     }, [dailyMock, dayOfWeek]);
 
     useEffect(() => {
-        setTimeOfDayData(timeofdayMock![timeOfDay]);
+        if(!timeofdayMock) fetchTimeOfDayData(timeOfDay);
+        else setTimeOfDayData(timeofdayMock![timeOfDay]);
     }, [timeofdayMock, timeOfDay]);
 
     return (
