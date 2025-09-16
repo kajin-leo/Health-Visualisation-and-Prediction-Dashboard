@@ -1,11 +1,7 @@
 package com.cs79_1.interactive_dashboard.Controller;
 
-import com.cs79_1.interactive_dashboard.DTO.WeightStatus;
-import com.cs79_1.interactive_dashboard.DTO.BodyCompositionSummary;
+import com.cs79_1.interactive_dashboard.DTO.*;
 import com.cs79_1.interactive_dashboard.DTO.FoodIntakeSummary;
-import com.cs79_1.interactive_dashboard.DTO.FoodIntakeResultDto;
-import com.cs79_1.interactive_dashboard.DTO.SleepSummary;       
-import com.cs79_1.interactive_dashboard.DTO.FoodIntakeSummary;  
 import com.cs79_1.interactive_dashboard.Security.SecurityUtils;
 import com.cs79_1.interactive_dashboard.Service.StaticInfoService;
 import com.cs79_1.interactive_dashboard.Service.StaticInfoService.FoodIntakeService;
@@ -13,6 +9,7 @@ import com.cs79_1.interactive_dashboard.Service.StaticInfoService.FoodIntakeServ
 import java.util.HashMap;
 import java.util.Map;
 
+import com.cs79_1.interactive_dashboard.Service.WorkoutAmountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +24,9 @@ import org.springframework.web.bind.annotation.RestController;
 public class StaticInfoController {
     @Autowired
     private StaticInfoService staticInfoService;
+
+    @Autowired
+    private WorkoutAmountService workoutAmountService;
 
     @GetMapping("/weight-metrics")
     public ResponseEntity<?> getWeightMetricsZScore() {
@@ -92,7 +92,6 @@ public class StaticInfoController {
         return ResponseEntity.ok(dto);
     }
 
-
     @GetMapping("/body-composition")
     public ResponseEntity<BodyCompositionSummary> getBodyComposition() {
         long userId = SecurityUtils.getCurrentUserId();
@@ -112,29 +111,38 @@ public class StaticInfoController {
         result.put("wlgx50", dto.getWlgx50());
 
         return ResponseEntity.ok(result);
-}
+    }
 
-    
-    
+    @GetMapping("/workout-overview")
+    public ResponseEntity<WorkoutOverviewDTO>  getWorkoutOverview() {
+        long userId = SecurityUtils.getCurrentUserId();
+        try {
+            WorkoutOverviewDTO dto = workoutAmountService.getOverview(userId);
+            return ResponseEntity.ok(dto);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
     @RestController
     @RequestMapping("/api/food-intake")
     public class FoodIntakeController {
 
-    @GetMapping("/food-intake")
-    public ResponseEntity<FoodIntakeResultDto> getFoodIntake() {
-    long userId = SecurityUtils.getCurrentUserId();
-    FoodIntakeResultDto dto = foodIntakeService.calculateFoodIntake(userId);
-    return ResponseEntity.ok(dto);
-}
-    @Autowired
-    private FoodIntakeService foodIntakeService;
+        @GetMapping("/food-intake")
+        public ResponseEntity<FoodIntakeResultDto> getFoodIntake() {
+            long userId = SecurityUtils.getCurrentUserId();
+            FoodIntakeResultDto dto = foodIntakeService.calculateFoodIntake(userId);
+            return ResponseEntity.ok(dto);
+        }
+        @Autowired
+        private FoodIntakeService foodIntakeService;
 
-    @GetMapping("/rings")
-    public FoodIntakeResultDto getFoodIntakeRings() {
-        long userId = SecurityUtils.getCurrentUserId();
-        return foodIntakeService.calculateFoodIntake(userId);
+        @GetMapping("/rings")
+        public FoodIntakeResultDto getFoodIntakeRings() {
+            long userId = SecurityUtils.getCurrentUserId();
+            return foodIntakeService.calculateFoodIntake(userId);
+        }
+
+
     }
-}
-
-
 }
