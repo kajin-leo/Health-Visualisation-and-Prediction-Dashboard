@@ -6,6 +6,7 @@ import FoodIntake from "../../components/DashboardCardContent/FoodIntake/FoodInt
 import WlgrWlgxCards from "../../components/DashboardCardContent/WlgrWlgx/WlgrWlgxCards.tsx";
 import BMI from "../../components/BmiCard.tsx"
 import FatMuscleWaterCard from "../../components/DashboardCardContent/Body/FatMuscleWaterCard.tsx";
+import WorkoutOverview from '../../components/DashboardCardContent/WorkoutOverview/WorkoutOverview.tsx';
 const Home = () => {
     return(
         <div className='w-full h-full py-4 grid grid-cols-1 auto-rows-[calc((100%-var(--spacing)*8)/3)] md:grid-cols-6 lg:grid-cols-12 gap-4 col-span-2 row-span-3 overflow-y-scroll pl-2 pr-4'>
@@ -29,12 +30,12 @@ const Home = () => {
                 <SleepGauges />
             </DashboardCard>
 
-            <DashboardCard id='lsmz' className='md:col-span-2 lg:col-span-7'>
+            <DashboardCard id='lsmz' className='md:col-span-2 lg:col-span-5'>
                 <WeightMetrics />
             </DashboardCard>
 
-            <DashboardCard id='metrics' className='md:col-span-2 lg:col-span-5'>
-
+            <DashboardCard id='workout' className='md:col-span-2 lg:col-span-7'>
+                <WorkoutOverview />
             </DashboardCard>
 
             <DashboardCard>

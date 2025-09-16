@@ -161,17 +161,15 @@ public class StaticInfoService {
             throw new RuntimeException(e.getMessage());
         }
     }
+    
     private com.cs79_1.interactive_dashboard.Entity.MentalHealthAndDailyRoutine loadSleepRow(long userId) {
         return mentalHealthAndDailyRoutineRepository.findByUser_Id(userId)
                 .orElseThrow(() -> new RuntimeException("No sleep row for user " + userId));
     }
 
-
-
     public double getSchoolNightAvgHours(long userId) {
         return loadSleepRow(userId).getWeekdaySleepingAvgDuration();
     }
-
 
     public double getWeekendNightAvgHours(long userId) {
         return loadSleepRow(userId).getWeekendSleepingAvgDuration();
@@ -210,9 +208,6 @@ public class StaticInfoService {
 
         return dto;
     }
-
-
-
 
     @Service
     public class FoodIntakeService {
@@ -276,10 +271,4 @@ public class StaticInfoService {
         }
 
     }
-
-
-
-
-
-
 }
