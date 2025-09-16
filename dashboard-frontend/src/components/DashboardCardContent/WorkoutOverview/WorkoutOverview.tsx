@@ -109,7 +109,7 @@ const WorkoutOverview = ({mock}: {mock?: Workout[]}) => {
             <h1 className="w-fit opacity-70 bg-green-600 rounded-lg text-white px-2 text-xl font-light font-[Outfit] flex-shrink-0">
                 Workout Overview
             </h1>
-            {WorkoutOverviewChart(workoutData)}
+            <WorkoutOverviewChart data={workoutData} showTooltips={true} />
         </div>
     );
 }
