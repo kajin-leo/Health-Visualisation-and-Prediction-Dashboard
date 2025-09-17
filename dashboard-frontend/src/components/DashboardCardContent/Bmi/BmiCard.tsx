@@ -18,7 +18,7 @@ type BodyMetricsSummary = {
     bmi: number;
 }
 
-const BmiCard = () => {
+const BmiCard = ({MockData} : {MockData? : BodyMetricsSummary}) => {
     // const angle = bmiToAngle(bmi);
     const [summaryData, setSummaryData] = useState<BodyMetricsSummary>();
 
@@ -33,9 +33,10 @@ const BmiCard = () => {
                 console.error(error);
             }
         }
-        fetchData();
+        if(!MockData) fetchData();
+        else setSummaryData(MockData);
         // if(summaryData) console.log(summaryData.bmi);
-    }, [])
+    }, [MockData])
 
     return (
         <>
@@ -43,7 +44,7 @@ const BmiCard = () => {
                 summaryData ? 
                 (
                     <div>
-                        <h1>WaistSize: {(summaryData.waistSize.toFixed(2))}</h1>
+                        <h1 className="m-2 p-2 rounded-full bg-sky-300">WaistSize: {(summaryData.waistSize.toFixed(2))}</h1>
                         <h1>Weight: {summaryData.weight.toFixed(2)}</h1>
                         <h1>Height: {summaryData.height.toFixed(2)}</h1>
                         <h1>BMI: {summaryData.bmi.toFixed(2)}</h1>
@@ -203,3 +204,4 @@ const BmiCard = () => {
 };
 
 export default BmiCard;
+export type {BodyMetricsSummary};
