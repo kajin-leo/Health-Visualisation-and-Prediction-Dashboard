@@ -24,13 +24,14 @@ const WorkoutOverviewChart = ({ data, showTooltips, className }: { data: Workout
         const ctx = chartRef.current.getContext('2d');
         if (!ctx) return;
 
-        chartInstance.current = new Chart(ctx, {
+        chartInstance.current = new Chart(ctx as CanvasRenderingContext2D, {
             type: 'line',
             data: {
                 labels: data.map(item => item.dayOfWeek.charAt(0) + item.dayOfWeek.slice(1).toLowerCase()),
                 datasets: [
                     {
                         label: 'MVPA',
+                        
                         data: data.map(item => item.mvpa),
                         borderColor: 'rgba(247, 128, 37, 1)',
                         backgroundColor: 'rgba(250, 160, 5, 0.6)',
@@ -68,7 +69,7 @@ const WorkoutOverviewChart = ({ data, showTooltips, className }: { data: Workout
                     }
                 }
             }
-        });
+        } as any);
 
         return () => {
             if (chartInstance.current) {
