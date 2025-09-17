@@ -198,4 +198,10 @@ public class BodyComposition {
     public void setWlgx50(double wlgx50) {
         this.wlgx50 = wlgx50;
     }
+
+    public double getBmi() {
+        return BMI;
+    }
+
+    public void setBmi(double bmi) { this.BMI = bmi; }
 }

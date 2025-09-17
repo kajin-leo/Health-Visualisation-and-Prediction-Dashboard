@@ -192,6 +192,7 @@ public class StaticInfoService {
         double wlgr50 = bc.getWlgr50();
         double wlgx625 = bc.getWlgx625();
         double wlgx50 = bc.getWlgx50();
+        double bmi = bc.getBmi();
         
         double sum = fat + muscle + water;
         if (sum > 100.0 && sum > 0) {
@@ -208,6 +209,7 @@ public class StaticInfoService {
         dto.setWlgr50(wlgr50);
         dto.setWlgx625(wlgx625);
         dto.setWlgx50(wlgx50);
+        dto.setBmi(bmi);
 
         return dto;
     }
