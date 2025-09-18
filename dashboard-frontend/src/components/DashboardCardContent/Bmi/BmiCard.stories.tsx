@@ -1,24 +1,14 @@
-import type { Meta, StoryObj } from '@storybook/react-vite';
+import type { Meta, StoryObj } from "@storybook/react";
+import BmiCard from "./BmiCard";
 
-import BMICard, {type BodyMetricsSummary} from './BmiCard';
-
-const meta = {
-  component: BMICard,
-} satisfies Meta<typeof BMICard>;
-
+const meta: Meta<typeof BmiCard> = {
+  title: "Dashboard/BmiCard",
+  component: BmiCard,
+};
 export default meta;
 
-type Story = StoryObj<typeof meta>;
-
-const mock: BodyMetricsSummary = {
-    "height": 155.5975526,
-    "weight": 44.68807639,
-    "waistSize": 68.06984616,
-    "bmi": 18.57475028
-};
+type Story = StoryObj<typeof BmiCard>;
 
 export const Default: Story = {
-  args: {
-    MockData: mock
-  }
+  render: () => <div className="max-w-xl"><BmiCard /></div>,
 };

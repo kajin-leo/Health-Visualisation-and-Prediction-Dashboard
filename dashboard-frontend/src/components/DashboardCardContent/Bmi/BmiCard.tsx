@@ -1,207 +1,273 @@
-import React, { useEffect } from "react";
-import { useState } from "react";
-import { apiClient } from "../../../service/axios";
+import React, { useEffect, useMemo, useState } from "react";
 
-/** 15~30 → -85° ~ +85°；18.5~24.9 在绿色中段 */
-function bmiToAngle(bmi: number) {
-    const min = 15, max = 30;
-    const t = (Math.max(min, Math.min(max, bmi)) - min) / (max - min);
-    return -85 + t * 170;
+/* ---------- Props ---------- */
+type BmiCardProps = {
+  bmi?: number;
+  heightCm?: number;
+  weightKg?: number;
+  waistCm?: number;
+
+  // 兼容别名
+  height?: number;
+  weight?: number;
+  waist?: number;
+
+  /** 传 true 时仅使用 props 渲染，不请求接口 */
+  disableFetch?: boolean;
+
+  width?: number | string;
+  className?: string;
+  style?: React.CSSProperties;
+};
+
+/* ---------- API DTO（宽松） ---------- */
+type BodyMetricsSummaryDTO = {
+  bmi?: number;
+  bmiValue?: number;
+  bmi_category?: string;
+  bmiCategory?: string;
+
+  height?: number;
+  heightCm?: number;
+  height_cm?: number;
+
+  weight?: number;
+  weightKg?: number;
+  weight_kg?: number;
+
+  waist?: number;
+  waistCm?: number;
+  waist_cm?: number;
+};
+
+/* ---------- 内部统一结构 ---------- */
+type Metrics = {
+  bmi: number | null;
+  bmiCategory: string | null;
+  heightCm: number | null;
+  weightKg: number | null;
+  waistCm: number | null;
+};
+
+/* ---------- Utils ---------- */
+function classifyBMI(bmi: number) {
+  if (bmi < 18.5) return "Normal-Low";
+  if (bmi < 25) return "Normal";
+  if (bmi < 30) return "Overweight";
+  return "Obese";
+}
+function categoryColors(cat: string | null) {
+  const c = (cat ?? "").toLowerCase();
+  if (c.includes("normal") && c.includes("low")) return { bg: "bg-cyan-100", text: "text-cyan-700" };
+  if (c.includes("normal")) return { bg: "bg-emerald-100", text: "text-emerald-700" };
+  if (c.includes("over")) return { bg: "bg-amber-100", text: "text-amber-700" };
+  if (!c) return { bg: "bg-gray-100", text: "text-gray-600" };
+  return { bg: "bg-rose-100", text: "text-rose-700" };
+}
+function num(v: unknown): number | null {
+  return typeof v === "number" && !Number.isNaN(v) ? v : null;
+}
+function pick(obj: any, keys: string[]): number | null {
+  for (const k of keys) {
+    const v = obj?.[k];
+    if (typeof v === "number" && !Number.isNaN(v)) return v;
+  }
+  return null;
 }
 
-type Props = { bmi: number; waist: number; height: number; weight: number; width?: number; showLabels?: boolean; };
+/* ---------- Arc Gauge ---------- */
+const ArcGauge: React.FC<{
+  value: number;
+  min?: number;
+  max?: number;
+  size?: number;        // 宽度；高度= size/2
+  strokeWidth?: number;
+}> = ({ value, min = 10, max = 40, size = 220, strokeWidth = 12 }) => {
+  const v = Math.min(Math.max(value, min), max);
+  const pct = (v - min) / (max - min);
 
-type BodyMetricsSummary = {
-    height: number;
-    weight: number;
-    waistSize: number;
-    bmi: number;
-}
+  const cx = size / 2;
+  const cy = size / 2;
+  const r = (size - strokeWidth) / 2;
 
-const BmiCard = ({MockData} : {MockData? : BodyMetricsSummary}) => {
-    // const angle = bmiToAngle(bmi);
-    const [summaryData, setSummaryData] = useState<BodyMetricsSummary>();
+  const arcPath = `M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`;
+  const len = Math.PI * r;
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const response = apiClient.get('/static/bodymetrics-overview');
-                const data = (await response).data;
-                console.log(data);
-                setSummaryData(data);
-            } catch (error) {
-                console.error(error);
-            }
+  const angle = Math.PI * (1 - pct); // 左->右
+  const knobX = cx + r * Math.cos(angle);
+  const knobY = cy + r * Math.sin(angle);
+
+  return (
+    <svg width={size} height={size / 2} viewBox={`0 0 ${size} ${size / 2}`}>
+      <path d={arcPath} fill="none" stroke="rgba(0,0,0,0.08)" strokeWidth={strokeWidth} />
+      <defs>
+        <linearGradient id="bmiGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="#22c55e" />
+          <stop offset="50%" stopColor="#f59e0b" />
+          <stop offset="100%" stopColor="#ef4444" />
+        </linearGradient>
+      </defs>
+      <path
+        d={arcPath}
+        fill="none"
+        stroke="url(#bmiGradient)"
+        strokeWidth={strokeWidth}
+        strokeDasharray={len}
+        strokeDashoffset={(1 - pct) * len}
+        strokeLinecap="round"
+      />
+      <circle cx={knobX} cy={knobY} r={strokeWidth / 2} fill="#8b5cf6" />
+    </svg>
+  );
+};
+
+/* ---------- 简洁三列 Tile（无徽标） ---------- */
+const Tile: React.FC<{ label: string; value: string; unit?: string }> = ({ label, value, unit }) => {
+  return (
+    <div className="rounded-2xl bg-white shadow-sm border border-white/60 px-2 h-20 flex flex-col items-center justify-center text-center">
+      <div className="text-xs text-gray-500">{label}</div>
+      <div className="leading-tight mt-0.5">
+        <span
+          className="font-semibold text-gray-900"
+          style={{ fontSize: "clamp(1.05rem, 2vw, 1.4rem)", lineHeight: 1.1 }}
+        >
+          {value}
+        </span>
+      </div>
+      {unit ? <div className="text-[11px] text-gray-400 mt-0.5">{unit}</div> : null}
+    </div>
+  );
+};
+
+/* ---------- 主组件 ---------- */
+const BmiCard: React.FC<BmiCardProps> = (props) => {
+  const [metrics, setMetrics] = useState<Metrics | null>(null);
+
+  // 先用 props 生成本地 metrics（有就用，不触发 fetch）
+  const propMetrics: Metrics | null = useMemo(() => {
+    const heightCm = num(props.heightCm ?? props.height);
+    const weightKg = num(props.weightKg ?? props.weight);
+    let bmi = num(props.bmi);
+
+    if (bmi == null && heightCm != null && weightKg != null) {
+      const m = heightCm / 100;
+      bmi = +(weightKg / (m * m)).toFixed(1);
+    }
+    if (bmi == null && heightCm == null && weightKg == null && (props.waist ?? props.waistCm) == null) {
+      return null; // 完全没给就返回 null，后面再决定要不要 fetch
+    }
+
+    const bmiCategory = bmi != null ? classifyBMI(bmi) : null;
+    return {
+      bmi,
+      bmiCategory,
+      heightCm,
+      weightKg,
+      waistCm: num(props.waistCm ?? props.waist),
+    };
+  }, [props.bmi, props.heightCm, props.height, props.weightKg, props.weight, props.waistCm, props.waist]);
+
+  useEffect(() => {
+    // 有 props 或 disableFetch => 直接用 props，不 fetch
+    if (propMetrics || props.disableFetch) {
+      setMetrics(propMetrics ?? { bmi: null, bmiCategory: null, heightCm: null, weightKg: null, waistCm: null });
+      return;
+    }
+
+    // 否则尝试从后端拿
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/static/bodymetrics-overview");
+        // 防止后端返回 HTML（登录页/错误页）
+        const text = await res.text();
+        let json: BodyMetricsSummaryDTO;
+        try {
+          json = JSON.parse(text);
+        } catch {
+          // 非 JSON：静默降级为占位符，不打断 UI
+          if (!cancelled) setMetrics({ bmi: null, bmiCategory: null, heightCm: null, weightKg: null, waistCm: null });
+          return;
         }
-        if(!MockData) fetchData();
-        else setSummaryData(MockData);
-        // if(summaryData) console.log(summaryData.bmi);
-    }, [MockData])
 
-    return (
-        <>
-            {
-                summaryData ? 
-                (
-                    <div>
-                        <h1 className="m-2 p-2 rounded-full bg-sky-300">WaistSize: {(summaryData.waistSize.toFixed(2))}</h1>
-                        <h1>Weight: {summaryData.weight.toFixed(2)}</h1>
-                        <h1>Height: {summaryData.height.toFixed(2)}</h1>
-                        <h1>BMI: {summaryData.bmi.toFixed(2)}</h1>
-                    </div>
-                )
-                 :
-                (<h1>Loading</h1>)
-            }
-        </>
-        // <svg
-        //   width={width}
-        //   viewBox="0 0 720 980"
-        //   xmlns="http://www.w3.org/2000/svg"
-        //   role="img"
-        //   aria-label={`BMI card, BMI ${bmi}`}
-        // >
-        //   {/* ====== defs ====== */}
-        //   <defs>
-        //     {/* 卡片渐变 */}
-        //     <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
-        //       <stop offset="0" stopColor="#dff0ff" />
-        //       <stop offset="1" stopColor="#cfe6f7" />
-        //     </linearGradient>
+        const heightCm = pick(json, ["heightCm", "height_cm", "height"]);
+        const weightKg = pick(json, ["weightKg", "weight_kg", "weight"]);
+        let bmi = pick(json, ["bmi", "bmiValue"]);
+        if (bmi == null && heightCm != null && weightKg != null) {
+          const m = heightCm / 100;
+          bmi = +(weightKg / (m * m)).toFixed(1);
+        }
+        const bmiCategory =
+          (json.bmiCategory as string) ||
+          (json.bmi_category as string) ||
+          (bmi != null ? classifyBMI(bmi) : null);
 
-        //     {/* 仪表盘主渐变（沿弧线方向） */}
-        //     <linearGradient id="gaugeGrad" gradientUnits="userSpaceOnUse"
-        //                     x1="140" y1="230" x2="580" y2="230">
-        //       <stop offset="0%"  stopColor="#ff4d6d"/>
-        //       <stop offset="22%" stopColor="#ffb703"/>
-        //       <stop offset="44%" stopColor="#28c76f"/>
-        //       <stop offset="70%" stopColor="#22c1f1"/>
-        //       <stop offset="100%" stopColor="#7c3aed"/>
-        //     </linearGradient>
+        if (!cancelled) {
+          setMetrics({
+            bmi,
+            bmiCategory,
+            heightCm,
+            weightKg,
+            waistCm: pick(json, ["waistCm", "waist_cm", "waist"]),
+          });
+        }
+      } catch {
+        if (!cancelled) {
+          setMetrics({ bmi: null, bmiCategory: null, heightCm: null, weightKg: null, waistCm: null });
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [propMetrics, props.disableFetch]);
 
-        //     {/* 柔光阴影 */}
-        //     <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
-        //       <feDropShadow dx="0" dy="6" stdDeviation="12" floodColor="#0f172a" floodOpacity="0.12" />
-        //     </filter>
+  // 渲染所需字段
+  const bmiValue = metrics?.bmi ?? null;
+  const bmiCategory = metrics?.bmiCategory ?? null;
+  const h = metrics?.heightCm ?? null;
+  const w = metrics?.weightKg ?? null;
+  const waist = metrics?.waistCm ?? null;
 
-        //     {/* 内侧微高光（让边缘更“丝滑”） */}
-        //     <linearGradient id="innerGlow" x1="0" y1="0" x2="0" y2="1">
-        //       <stop offset="0" stopColor="#ffffff" stopOpacity="0.35"/>
-        //       <stop offset="1" stopColor="#ffffff" stopOpacity="0"/>
-        //     </linearGradient>
+  const catColor = categoryColors(bmiCategory);
 
-        //     {/* 刻度用遮罩：把弧线范围裁出来再画短线，不会溢出 */}
-        //     <mask id="tickMask">
-        //       <rect x="0" y="0" width="720" height="980" fill="black"/>
-        //       <path d="M 140 350
-        //                A 220 220 0 0 1 580 350"
-        //             fill="none" stroke="white" strokeWidth="60" strokeLinecap="round"/>
-        //     </mask>
-        //   </defs>
+  return (
+    <div
+      className={
+        "w-full h-full flex flex-col items-center" +
+        (props.className ?? "")
+      }
+      style={{ width: props.width, ...props.style }}
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between w-full">
+        <h3 className="text-lg font-semibold tracking-tight text-gray-900">Body Metrics</h3>
+        <span className={`px-3 py-1 rounded-full text-xs font-medium ${catColor.bg} ${catColor.text}`}>
+          {bmiCategory ?? "—"}
+        </span>
+      </div>
 
-        //   {/* 卡片背景 */}
-        //   <rect x="36" y="36" width="648" height="908" rx="36" fill="url(#bg)" />
+      {/* 上半：弧线（固定高） + 居中 BMI 数字（完全分区，不重叠） */}
+      <div className=" flex flex-col items-center">
+        <div className="h-[140px] w-full flex items-center justify-center">
+          <ArcGauge value={bmiValue ?? 22} size={220} />
+        </div>
+        <div className="-mt-15 flex items-baseline gap-2">
+          <div className="text-4xl font-bold leading-none text-gray-900">
+            {bmiValue != null ? bmiValue.toFixed(1) : "—"}
+          </div>
+          <div className="text-xs text-gray-400">kg/m²</div>
+        </div>
+      </div>
 
-        //   {/* ====== 仪表盘（更顺滑） ====== */}
-        //   <g transform="translate(0,0)">
-        //     {/* 柔光底弧（加厚+模糊阴影，营造丝滑感） */}
-        //     <path d="M 140 350
-        //              A 220 220 0 0 1 580 350"
-        //           fill="none" stroke="#b9d8f1" strokeWidth="54" strokeLinecap="round" filter="url(#soft)" opacity="0.9"/>
-
-        //     {/* 主弧：单段渐变，圆头 */}
-        //     <path d="M 140 350
-        //              A 220 220 0 0 1 580 350"
-        //           fill="none" stroke="url(#gaugeGrad)" strokeWidth="40" strokeLinecap="round"/>
-
-        //     {/* 内缘高光（很薄的一层，顺着弧线） */}
-        //     <path d="M 145 349
-        //              A 215 215 0 0 1 575 349"
-        //           fill="none" stroke="url(#innerGlow)" strokeWidth="8" strokeLinecap="round" opacity="0.9"/>
-
-        //     {/* 低存在感刻度（遮罩到弧线内） */}
-        //     <g mask="url(#tickMask)" opacity="0.33">
-        //       {Array.from({ length: 17 }).map((_, i) => {
-        //         const t = i / 16; // 0~1
-        //         const theta = (-85 + t * 170) * Math.PI / 180;
-        //         const cx = 360 + Math.cos(theta) * 220;
-        //         const cy = 350 - Math.sin(theta) * 220;
-        //         // 法线方向内外各 10px
-        //         const nx = Math.cos(theta + Math.PI/2);
-        //         const ny = -Math.sin(theta + Math.PI/2);
-        //         const x1 = cx + nx * 8,  y1 = cy + ny * 8;
-        //         const x2 = cx - nx * 8,  y2 = cy - ny * 8;
-        //         return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#0f172a" strokeWidth={i%4===0?3:2} strokeLinecap="round"/>;
-        //       })}
-        //     </g>
-
-        //     {/* 指针（仍受角度限制，永不越界） */}
-        //     <g transform={`rotate(${angle}, 360, 350)`}>
-        //       <line x1="360" y1="350" x2="470" y2="240" stroke="#1f2a44" strokeWidth="18" strokeLinecap="round" />
-        //       <circle cx="360" cy="350" r="10" fill="#1f2a44" />
-        //     </g>
-        //   </g>
-
-        //   {/* 文案：与图形分离 */}
-        //   <text x="360" y="420" textAnchor="middle" fontFamily="Inter, Arial, Helvetica, sans-serif"
-        //         fontSize="80" fontWeight="900" fill="#1f2a44">
-        //     BMI={bmi}
-        //   </text>
-        //   <text x="360" y="482" textAnchor="middle" fontFamily="Inter, Arial, Helvetica, sans-serif"
-        //         fontSize="64" fontWeight="900" fill="#1f2a44" letterSpacing="2">
-        //     NORMAL
-        //   </text>
-
-        //   {/* ====== 人物（两手两腿） ====== */}
-        //   <g transform="translate(0,10)">
-        //     <circle cx="360" cy="560" r="80" fill="#ffd9c2" stroke="#1f2a44" strokeWidth="10" />
-        //     <rect x="250" y="620" width="220" height="140" rx="90"
-        //           fill="#ffd9c2" stroke="#1f2a44" strokeWidth="10" />
-        //     <path d="M 250 685 C 210 685, 210 725, 240 740" fill="none"
-        //           stroke="#1f2a44" strokeWidth="14" strokeLinecap="round"/>
-        //     <path d="M 470 685 C 510 685, 510 725, 480 740" fill="none"
-        //           stroke="#1f2a44" strokeWidth="14" strokeLinecap="round"/>
-        //     <path d="M 310 760 Q 310 860 335 860 Q 360 860 360 760"
-        //           fill="#ffd9c2" stroke="#1f2a44" strokeWidth="10"/>
-        //     <path d="M 360 760 Q 360 860 385 860 Q 410 860 410 760"
-        //           fill="#ffd9c2" stroke="#1f2a44" strokeWidth="10"/>
-
-        //     {/* 腰部软尺 + 标签 */}
-        //     <g>
-        //       <rect x="250" y="690" width="220" height="44" rx="22" fill="none" stroke="#1f2a44" strokeWidth="8"/>
-        //       <g stroke="#1f2a44" strokeWidth="4">
-        //         {Array.from({ length: 23 }).map((_, i) => (
-        //           <line key={i} x1={260 + i * (200/22)} y1={696} x2={260 + i * (200/22)} y2={730} />
-        //         ))}
-        //       </g>
-        //       <rect x="485" y="686" width="130" height="50" rx="20" fill="#ffffff" />
-        //       <text x="550" y="720" textAnchor="middle"
-        //             fontFamily="Inter, Arial, Helvetica, sans-serif" fontSize="34" fontWeight="900" fill="#1f2a44">
-        //         Waist={waist}
-        //       </text>
-        //     </g>
-        //   </g>
-
-        //   {/* Height（仅与人物等高） */}
-        //   <g>
-        //     <line x1="110" y1="470" x2="110" y2="870" stroke="#1f2a44" strokeWidth="12"/>
-        //     <polyline points="110,445 90,480 110,470 130,480" fill="#1f2a44"/>
-        //     <polyline points="110,895 90,860 110,870 130,860" fill="#1f2a44"/>
-        //     <text x="74" y="670" transform="rotate(-90,74,670)" textAnchor="middle"
-        //           fontFamily="Inter, Arial, Helvetica, sans-serif" fontSize="56" fontWeight="900" fill="#1f2a44">
-        //       Height={height}
-        //     </text>
-        //   </g>
-
-        //   {/* Weight（不越界） */}
-        //   <ellipse cx="360" cy="910" rx="140" ry="24" fill="#9cc7eb" opacity="0.5"/>
-        //   <text x="360" y="950" textAnchor="middle"
-        //         fontFamily="Inter, Arial, Helvetica, sans-serif" fontSize="58" fontWeight="900" fill="#1f2a44">
-        //     Weight={weight}
-        //   </text>
-        // </svg>
-    );
+      {/* 下半：固定三列，一排展示；无任何 badge */}
+      <div className="grid grid-cols-3 gap-3 mt-5">
+        <Tile label="Height" value={h != null ? h.toFixed(1) : "—"} unit="cm" />
+        <Tile label="Weight" value={w != null ? w.toFixed(1) : "—"} unit="kg" />
+        <Tile label="Waist" value={waist != null ? waist.toFixed(1) : "—"} unit="cm" />
+      </div>
+    </div>
+  );
 };
 
 export default BmiCard;
-export type {BodyMetricsSummary};

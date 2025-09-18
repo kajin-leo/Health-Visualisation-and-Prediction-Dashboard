@@ -18,7 +18,7 @@ const Home = () => {
             </DashboardCard>
 
             <DashboardCard id='Basic' className='row-span-2 md:col-span-2 lg:col-span-4'>
-                <BmiCard bmi={22} waist={150} height={175} weight={70} width={250} showLabels={true}/>
+                <BmiCard bmi={22} waist={150} height={175} weight={70} showLabels={true}/>
             </DashboardCard>
 
             <DashboardCard id='wlgr wlgx' className='md:col-span-2 lg:col-span-5'>
