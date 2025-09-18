@@ -1,10 +1,9 @@
-import {Button, Card, CardBody, CardFooter} from '@heroui/react'
 import DashboardCard from '../../components/DashboardCard';
 import WeightMetrics from '../../components/DashboardCardContent/WeightMetrics/WeightMetrics';
 import SleepGauges from "../../components/DashboardCardContent/Sleep/SleepGauges.tsx";
 import FoodIntakeWrapper from "../../components/DashboardCardContent/FoodIntake/FoodIntakeWrapper.tsx";
 import WlgrWlgxCards from "../../components/DashboardCardContent/WlgrWlgx/WlgrWlgxCards.tsx";
-import BMI from "../../components/BmiCard.tsx"
+import BmiCard from "../../components/DashboardCardContent/Bmi/BmiCard.tsx"
 import FatMuscleWaterCard from "../../components/DashboardCardContent/Body/FatMuscleWaterCard.tsx";
 import WorkoutOverview from '../../components/DashboardCardContent/WorkoutOverview/WorkoutOverview.tsx';
 const Home = () => {
@@ -18,8 +17,8 @@ const Home = () => {
                 <FatMuscleWaterCard />
             </DashboardCard>
 
-            <DashboardCard id='Basic' className='row-span-2 md:col-span-2 lg:col-span-4'>
-                <BMI />
+            <DashboardCard id='Basic' className=' md:col-span-2 lg:col-span-4'>
+                <BmiCard bmi={22} waist={150} height={175} weight={70} showLabels={true}/>
             </DashboardCard>
 
             <DashboardCard id='wlgr wlgx' className='md:col-span-2 lg:col-span-5'>

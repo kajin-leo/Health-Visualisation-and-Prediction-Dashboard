@@ -10,6 +10,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.cs79_1.interactive_dashboard.Service.WorkoutAmountService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +29,8 @@ public class StaticInfoController {
 
     @Autowired
     private WorkoutAmountService workoutAmountService;
+
+    private static final Logger logger = LoggerFactory.getLogger(StaticInfoController.class);
 
     @GetMapping("/weight-metrics")
     public ResponseEntity<?> getWeightMetricsZScore() {
@@ -120,6 +124,18 @@ public class StaticInfoController {
             WorkoutOverviewDTO dto = workoutAmountService.getOverview(userId);
             return ResponseEntity.ok(dto);
         } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @GetMapping("/bodymetrics-overview")
+    public ResponseEntity<BodyMetricsSummaryDTO> getBodyMetricsSummary() {
+        long userId = SecurityUtils.getCurrentUserId();
+        try {
+            BodyMetricsSummaryDTO dto = staticInfoService.getBodyMetricsSummary(userId);
+            return ResponseEntity.ok(dto);
+        } catch (Exception e) {
+            logger.error("Error fetching body metrics summary for user {}", userId, e);
             return ResponseEntity.internalServerError().build();
         }
     }
