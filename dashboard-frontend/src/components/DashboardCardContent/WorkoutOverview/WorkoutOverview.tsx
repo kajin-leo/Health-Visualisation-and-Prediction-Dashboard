@@ -61,7 +61,8 @@ const WorkoutOverviewChart = ({ data, showTooltips, className }: { data: Workout
                     },
                     tooltip: {
                         enabled: showTooltips ? showTooltips : false
-                    }
+                    },
+                    dragData: false
                 },
                 scales: {
                     y: {

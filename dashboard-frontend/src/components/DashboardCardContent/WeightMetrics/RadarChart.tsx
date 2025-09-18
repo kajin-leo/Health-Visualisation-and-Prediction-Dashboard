@@ -157,17 +157,6 @@ const RadarChart: React.FC<RadarChartProps> = ({
         maintainAspectRatio: true,
         aspectRatio: 1,
         plugins: {
-            // title: {
-            //     display: true,
-            //     text: title,
-            //     position: 'top',
-            //     align: 'center',
-            //     font: {
-            //         size: 15,
-            //         weight: 'normal',
-            //     },
-            //     color: 'black'
-            // },
             legend: {
                 display: false
             },
@@ -180,6 +169,7 @@ const RadarChart: React.FC<RadarChartProps> = ({
                     },
                 },
             },
+            dragData: false
         },
         scales: {
             r: {

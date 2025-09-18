@@ -52,7 +52,8 @@ const WorkoutDailyDetailsChart = ({data, showTooltips} : {data: DailyDetail[], s
                     },
                     tooltip: {
                         enabled: showTooltips ? showTooltips : false
-                    }
+                    },
+                    dragData: false
                 },
                 scales: {
                     y: {
