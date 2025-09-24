@@ -8,6 +8,16 @@ export const API_CONFIG = {
     }
 };
 
+export const ML_API_CONFIG = {
+    BASE_URL: 'http://localhost:5485',
+    BASE_PATH: import.meta.env.VITE_API_BASE_PATH || '/api',
+    TIMEOUT: 10000,
+
+    get FULL_URL() {
+        return `${this.BASE_URL}${this.BASE_PATH}`;
+    }
+};
+
 export const ENV = {
     API_URL: import.meta.env.VITE_API_URL,
     API_BASE_PATH: import.meta.env.VITE_API_BASE_PATH,

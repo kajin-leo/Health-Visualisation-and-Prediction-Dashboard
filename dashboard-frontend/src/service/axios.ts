@@ -1,9 +1,17 @@
 import axios, { type AxiosInstance } from 'axios';
-import { API_CONFIG } from '../config/api';
+import { API_CONFIG, ML_API_CONFIG } from '../config/api';
 
 const apiClient: AxiosInstance = axios.create({
     baseURL: API_CONFIG.FULL_URL,
     timeout: API_CONFIG.TIMEOUT,
+    headers: {
+        'Content-Type': 'application/json',
+    },
+});
+
+const mlClient: AxiosInstance = axios.create({
+    baseURL: ML_API_CONFIG.FULL_URL,
+    timeout: ML_API_CONFIG.TIMEOUT,
     headers: {
         'Content-Type': 'application/json',
     },
@@ -35,4 +43,4 @@ apiClient.interceptors.response.use(response => response,
     }
 )
 
-export {apiClient, authClient};
+export {apiClient, authClient, mlClient};

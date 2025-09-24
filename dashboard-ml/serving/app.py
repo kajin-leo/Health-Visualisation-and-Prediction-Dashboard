@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import torch
 import numpy as np
 import pandas as pd
@@ -11,6 +12,7 @@ import os
 from sqlalchemy import create_engine, text
 
 app = Flask(__name__)
+CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
 
 CHECKPOINT = r"../checkpoints/model_best.pth"     # 你的ckpt路径
 # CSV_PATH   = r"dashboard-ml/SYNTH_000410.csv"  # 这次要预测的那份CSV
@@ -19,22 +21,20 @@ CHECKPOINT = r"../checkpoints/model_best.pth"     # 你的ckpt路径
 
 CLASS_NAMES = ["HFZ", "NIHR", "NI", "VL"]
 NUM_CLASSES = len(CLASS_NAMES)
-MAX_SEQ_LEN = 222          # 训练时用的序列对齐长度
-CSV_HAS_HEADER = True     # 训练数据无表头就 False；有表头就 True
+MAX_SEQ_LEN = 222       
+CSV_HAS_HEADER = True   
 PAD_VALUE = 0.0
 USE_STATIC = True
 
 with open(r"../checkpoints/normalization.pickle", "rb") as f:
     norm_dict = pickle.load(f)
 
-# 2. 用里面的参数初始化 Normalizer
 normalizer = Normalizer(norm_dict["norm_type"],
                         mean=norm_dict.get("mean"),
                         std=norm_dict.get("std"),
                         min_val=norm_dict.get("min_val"),
                         max_val=norm_dict.get("max_val"))
 
-# ======= 构建模型 & 载入权重 =======
 device = "cuda" if torch.cuda.is_available() else "cpu"
 model = TSTransformerEncoderClassiregressor(
     feat_dim=3, max_len=MAX_SEQ_LEN, d_model=64, n_heads=8, num_layers=3,
@@ -47,10 +47,9 @@ model = model.to(device)
 # ======= for collecting AttCAT =======
 collector = AttnHiddenCollector(model, capture_grads=True, store_on_cpu=False).register()
 
-# 推荐用环境变量注入，便于部署
-DB_URL = "postgresql+psycopg2://cs79dashboard:interactivedashboard_cs79-1@127.0.0.1:5480/cs79-dashboard"
+DB_URL = "postgresql+psycopg2://cs79dashboard:interactivedashboard_cs79-1@host.docker.internal:5480/cs79-dashboard"
 engine = create_engine(DB_URL, pool_pre_ping=True, future=True)
-def load_timeseries_from_db(sid: str, table_name: str = "workout_amount") -> pd.DataFrame:
+def load_timeseries_from_db(sid: int, table_name: str = "workout_amount") -> pd.DataFrame:
     sql = text(f"""
         SELECT date_time as ts, sum_seconds_light3 as f3, sum_secondsmvpa3 as f1, sum_secondssed60 as f2
         FROM {table_name}
@@ -61,13 +60,13 @@ def load_timeseries_from_db(sid: str, table_name: str = "workout_amount") -> pd.
     if df.empty:
         raise ValueError(f"No timeseries found for sid={sid}")
 
-    return df[["f1", "f2", "f3"]]
+    return df[["ts", "f1", "f2", "f3"]]
 
-def load_attrs_from_db(sid: str, table_name: str = "individual_attributes") -> tuple[float, float]:
+def load_attrs_from_db(sid: int, table_name: str = "users"):
     sql = text(f"""
-        SELECT age_year as age, "sex (1 male 2 female)" AS sex
+        SELECT age_year as age, sex
         FROM {table_name}
-        WHERE user_name = :sid
+        WHERE id = :sid
         LIMIT 1
     """)
     df = pd.read_sql(sql, con=engine, params={"sid": sid})
@@ -77,7 +76,7 @@ def load_attrs_from_db(sid: str, table_name: str = "individual_attributes") -> t
     is_female = 1.0 if int(df.loc[0, "sex"]) == 2 else 0.0
     return age, is_female
 
-@app.route("/predict", methods=["POST"])
+@app.route("/api/predict", methods=["POST"])
 def predict():
 
     # ① 获取 sid（比如请求体里传 {"sid":"SYNTH_000410"} 或 form 里传 sid=SYNTH_000410）
@@ -88,11 +87,12 @@ def predict():
 
     try:
         df = load_timeseries_from_db(sid)      # 返回列正好是 f1,f2,f3
+        df["ts"] = pd.to_datetime(df["ts"], errors="coerce")
         age, is_female = load_attrs_from_db(sid)
     except Exception as e:
         return jsonify({"error": str(e)}), 404
 
-    feat = df.copy()
+    feat = df[["f1", "f2", "f3"]].copy()
     feat.columns = ["f1", "f2", "f3"]
 
     # ====== 归一化 ======
@@ -103,10 +103,12 @@ def predict():
     L = MAX_SEQ_LEN
     if T >= L:
         feat = feat.iloc[:L, :].reset_index(drop=True)
+        timeline = df["ts"].iloc[:L].reset_index(drop=True)
     else:
         pad_rows = L - T
         pad_df = pd.DataFrame(PAD_VALUE, index=range(pad_rows), columns=feat.columns)
         feat = pd.concat([feat, pad_df], axis=0, ignore_index=True)
+        timeline = pd.concat([df["ts"], pd.Series([pd.NaT]*pad_rows)], ignore_index=True)
 
     valid_len = min(T, L)
     pad_len = L - valid_len
@@ -153,10 +155,57 @@ def predict():
     vmax = np.percentile(np.abs(impact), 99)
     if vmax == 0: vmax = 1e-6
     impact = np.clip(impact, -vmax, vmax) / vmax
-    impact = impact[:valid_len, :].tolist()  # [T,3]
+    # ====== 只保留有效长度（去掉 pad）======
+    impact = impact[:valid_len, :]               # [valid_len, 3]
+    timeline_valid = timeline[:valid_len]
+    MVPA_IDX = 0
+    LIGHT_IDX = 2
+    mvpa_vals  = df["f1"].iloc[:valid_len].tolist()
+    light_vals = df["f3"].iloc[:valid_len].tolist()
+    BIN_EDGES = [(0,600), (600,1200), (1200,1800), (1800,2400), (2400,3000), (3000,3600)]
+    BIN_LABELS = [f"{lo}-{hi}" for (lo,hi) in BIN_EDGES]
+
+    def _num(x):
+        try:
+            return None if (x is None or pd.isna(x)) else float(x)
+        except Exception:
+            return None
+    
+    def sec_to_bin_label(v: int):
+        if v is None:
+            return None
+        try:
+            x = float(v)
+        except Exception:
+            return None
+        for (lo, hi), lab in zip(BIN_EDGES, BIN_LABELS):
+            if lo <= x < hi:
+                return lab
+        return BIN_LABELS[-1]
+
+    # def _to_iso(ts: pd.Timestamp):
+    #     if pd.isna(ts):
+    #         return None
+    #     return ts.isoformat()  # "YYYY-MM-DDTHH:MM:SS"
+
+    hours    = timeline_valid.dt.hour.fillna(-1).astype(int).tolist()     
+    weekdays = timeline_valid.dt.weekday.fillna(-1).astype(int).tolist()  
+    # ts_iso   = [ _to_iso(t) for t in timeline_valid ]
+
+    mvpa_impact = [
+        # {"ts": ts_iso[i],
+        {"value": _num(mvpa_vals[i]), "impact": float(impact[i, MVPA_IDX]), "hour": int(hours[i]), "weekday": int(weekdays[i]), "bin": sec_to_bin_label(mvpa_vals[i])}
+        for i in range(valid_len)
+    ]
+    light_impact = [
+        # {"ts": ts_iso[i], 
+        {"value": _num(light_vals[i]), "impact": float(impact[i, LIGHT_IDX]),"hour": int(hours[i]), "weekday": int(weekdays[i]), "bin": sec_to_bin_label(light_vals[i])}
+        for i in range(valid_len)
+    ]
 
     return jsonify({
         "sid": sid,
         "probs": {cls: prob for cls, prob in zip(CLASS_NAMES, probs)},
-        "impact": impact
+        "mvpa_impact": mvpa_impact,
+        "light_impact": light_impact
     })

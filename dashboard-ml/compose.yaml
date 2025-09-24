@@ -30,6 +30,8 @@ services:
       - cs79-network
     restart: unless-stopped
     command: ["gunicorn", "-b", "0.0.0.0:5000", "app:app"]
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
 networks:
   cs79-network:

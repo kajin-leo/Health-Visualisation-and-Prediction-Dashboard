@@ -8,29 +8,48 @@ import {
 } from "chart.js";
 import { MatrixController, MatrixElement } from "chartjs-chart-matrix";
 import { Chart } from "react-chartjs-2";
-import { apiClient } from "../../../service/axios";
+import { userAPI } from "../../../service/api";
 
 ChartJS.register(CategoryScale, LinearScale, MatrixController, MatrixElement, Tooltip, Legend);
 
 type HeatmapPayload = {
-  mvpaHeatmap: Record<string, Record<string, number>>;
-  lightHeatmap: Record<string, Record<string, number>>;
+  mvpaValueHeatmap: Record<string, Record<string, number>>;
+  mvpaScoreHeatmap: Record<string, Record<string, number>>;
+  lightValueHeatmap: Record<string, Record<string, number>>;
+  lightScoreHeatmap: Record<string, Record<string, number>>;
 };
 
 const BIN_ORDER = ["0-600", "600-1200", "1200-1800", "1800-2400", "2400-3000", "3000-3600"];
 
-function convertHeatmapData(heatmap?: Record<string, Record<string, number>>) {
-  if (!heatmap) return [];
+type ImpactItem = {
+  ts?: string | null;
+  hour: number;
+  weekday: number;
+  bin: string;
+  value?: number;  
+  impact?: number; 
+};
+
+type ImpactResponse = {
+  mvpa_impact: ImpactItem[];
+  light_impact: ImpactItem[];
+};
+
+function convertHeatmapData(
+  valueMap?: Record<string, Record<string, number>>,
+  scoreMap?: Record<string, Record<string, number>>,
+) {
   const data: Array<{ x: number; y: string; v: number; score: number }> = [];
   for (let hour = 0; hour < 24; hour++) {
-    const bins = heatmap[String(hour)] || {};
+    const h = String(hour);
+    const vRow = valueMap?.[h] ?? {};
+    const sRow = scoreMap?.[h] ?? {};
     for (const bin of BIN_ORDER) {
-      const avg = bins[bin] ?? 0;
       data.push({
         x: hour,
         y: bin,
-        v: avg,
-        score: Math.random() * 2 - 1,
+        v: vRow[bin] ?? 0,
+        score: sRow[bin] ?? 0,
       });
     }
   }
@@ -54,21 +73,81 @@ const cellBg = (ctx: any) => {
   }
 };
 
+function toHourBinAggregates(items: ImpactItem[]) {
+  const acc: Record<string, Record<string, { sv: number; si: number; c: number }>> = {};
+  for (const it of items) {
+    const h = String(it.hour ?? 0);
+    const b = it.bin ?? BIN_ORDER[0];
+    const v = Number.isFinite(it.value as number) ? (it.value as number) : 0;
+    const s = Number.isFinite(it.impact as number) ? (it.impact as number) : 0;
+
+    acc[h] ??= {};
+    acc[h][b] ??= { sv: 0, si: 0, c: 0 };
+    acc[h][b].sv += v; // sum value
+    acc[h][b].si += s; // sum impact
+    acc[h][b].c += 1;
+  }
+
+  const valueMap: Record<string, Record<string, number>> = {};
+  const scoreMap: Record<string, Record<string, number>> = {};
+
+  for (let hour = 0; hour < 24; hour++) {
+    const h = String(hour);
+    valueMap[h] = {};
+    scoreMap[h] = {};
+    for (const bin of BIN_ORDER) {
+      const cell = acc[h]?.[bin];
+      if (cell && cell.c > 0) {
+        valueMap[h][bin] = cell.sv / cell.c; // v = value avg
+        scoreMap[h][bin] = cell.si / cell.c; // score = impact avg
+      } else {
+        valueMap[h][bin] = 0;
+        scoreMap[h][bin] = 0;
+      }
+    }
+  }
+
+  return { valueMap, scoreMap };
+}
+
 export default function HeatmapChart({ group }: { group: "weekdays" | "weekends" }) {
   const [payload, setPayload] = useState<HeatmapPayload | null>(null);
   const [loading, setLoading] = useState(false);
   const [type, setType] = useState<"mvpa" | "light">("mvpa");
 
   useEffect(() => {
-    apiClient
-      .get<HeatmapPayload>(`/workout/heatmap/${group}`)
-      .then((res) => setPayload(res.data))
-      .catch((err) => console.error("Failed to fetch heatmap", err));
-  }, [group]); 
+    const sid = '3'; // TODO: 换成当前用户 id
+    if (!sid) return;
+
+    setLoading(true);
+    userAPI
+      .getHeatMapData({ sid })
+      .then((res: { data: ImpactResponse } | ImpactResponse) => {
+        const data = "data" in res ? res.data : res;
+        // filter by group
+        const isWeekend = (wd: number) => wd >= 5;
+        const filterByGroup = (arr: ImpactItem[]) =>
+          arr.filter((it) => (group === "weekends" ? isWeekend(it.weekday) : !isWeekend(it.weekday)));
+
+        const mvpaAgg = toHourBinAggregates(filterByGroup(data.mvpa_impact));
+        const lightAgg = toHourBinAggregates(filterByGroup(data.light_impact));
+
+        setPayload({
+          mvpaValueHeatmap: mvpaAgg.valueMap,
+          mvpaScoreHeatmap: mvpaAgg.scoreMap,
+          lightValueHeatmap: lightAgg.valueMap,
+          lightScoreHeatmap: lightAgg.scoreMap,
+        });
+      })
+      .catch((err) => console.error("Failed to fetch heatmap", err))
+      .finally(() => setLoading(false));
+  }, [group]);
 
   const chartData = useMemo(() => {
-    const selected = type === "mvpa" ? payload?.mvpaHeatmap : payload?.lightHeatmap;
-    return convertHeatmapData(selected);
+    if (!payload) return [];
+    const valueMap = type === "mvpa" ? payload.mvpaValueHeatmap : payload.lightValueHeatmap;
+    const scoreMap = type === "mvpa" ? payload.mvpaScoreHeatmap : payload.lightScoreHeatmap;
+    return convertHeatmapData(valueMap, scoreMap);
   }, [payload, type]);
 
   const data = useMemo(
@@ -79,16 +158,8 @@ export default function HeatmapChart({ group }: { group: "weekdays" | "weekends"
           data: chartData,
           backgroundColor: cellBg,
           borderWidth: 1,
-        //   width: ({ chart }) => {
-        //     const area = chart.chartArea || {};
-        //     return area.width / 24 - 2;
-        //   },
-        //   height: ({ chart }) => {
-        //     const area = chart.chartArea || {};
-        //     return area.height / BIN_ORDER.length - 2;
-        //   },
-        width:20,
-        height:20,
+          width: 20,
+          height: 20,
         },
       ],
     }),
