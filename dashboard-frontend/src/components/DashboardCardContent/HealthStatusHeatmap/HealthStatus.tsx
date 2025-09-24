@@ -135,7 +135,7 @@ export default function HeatmapChart({ group }: { group: "weekdays" | "weekends"
 
   return (
     <div className="w-full h-full flex flex-col gap-3">
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 flex-shrink-0">
         <button
           className={`px-3 py-1 rounded-lg text-sm ${type === "mvpa" ? "bg-gradient-to-r from-violet-300 to-blue-300 text-white" : "bg-gray-200"}`}
           onClick={() => setType("mvpa")}
@@ -152,7 +152,7 @@ export default function HeatmapChart({ group }: { group: "weekdays" | "weekends"
         {loading && <span className="text-sm text-gray-500">Loading…</span>}
       </div>{loading && <span className="text-sm text-gray-500">Loading…</span>}
 
-      <div style={{ width: "90%", height: 180 }}>
+      <div className="w-full h-full">
         <Chart type="matrix" data={data} options={options as any} />
       </div>
     </div>
