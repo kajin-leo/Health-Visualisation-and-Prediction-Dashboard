@@ -11,19 +11,19 @@ const categoryColors = (classification: string) => {
     switch(classification) {
         case 'HFZ':
             catColor.bg = 'bg-green-300/50';
-            catColor.text = 'bg-green-600';
+            catColor.text = 'text-green-600';
             break;
         case 'NI':
             catColor.bg = 'bg-red-300/50';
-            catColor.text = 'bg-red-600';
+            catColor.text = 'text-red-600';
             break;
         case 'NIHR':
             catColor.bg = 'bg-orange-300/50';
-            catColor.text = 'bg-orange-600';
+            catColor.text = 'text-orange-600';
             break;
         case 'VL':
             catColor.bg = 'bg-brown-300/50';
-            catColor.text = 'bg-brown-600';
+            catColor.text = 'text-brown-600';
             break;
     }
     return catColor;
@@ -130,11 +130,13 @@ const BmiCard = ({mock, ...props} : {mock? : Metrics, props : React.ReactNode}) 
             }
         >
             {/* Header */}
-            <div className="flex items-center justify-between w-full">
-                <h3 className="text-lg font-semibold tracking-tight text-gray-900">Body Metrics</h3>
-                <span className={`px-3 py-1 rounded-full text-xs font-medium ${catColor.bg} ${catColor.text}`}>
+            <div className="flex items-center justify-end w-full">
+                {/* <h1 className="w-fit opacity-100 rounded-lg text-gray-800 pl-1 tracking-tight text-lg font-bold font-[Nunito] flex-shrink-0">
+                    Body Metrics
+                </h1> */}
+                <div className={`px-3 py-1 rounded-full text-xs font-medium ${catColor.bg} ${catColor.text} shadow-sm outline-1 outline-white/40`}>
                     {metrics?.classification ?? "—"}
-                </span>
+                </div>
             </div>
 
             {/* 上半：弧线（固定高） + 居中 BMI 数字（完全分区，不重叠） */}
