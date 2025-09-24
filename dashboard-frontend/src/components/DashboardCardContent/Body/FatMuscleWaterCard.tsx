@@ -14,7 +14,7 @@ export default function FatMuscleWaterCard() {
     useEffect(() => {
         (async () => {
             try {
-                const r = await apiClient.get("/static/body-composition"); // 注意：你的 baseURL 已含 /api
+                const r = await apiClient.get("/static/body-composition"); 
                 setData(r.data as Resp);
             } catch (e) {
                 setData({ fatPct: 22, musclePct: 45, waterPct: 33 });
@@ -28,7 +28,7 @@ export default function FatMuscleWaterCard() {
         datasets: [
             {
                 data: [data?.fatPct ?? 0, data?.musclePct ?? 0, data?.waterPct ?? 0],
-                backgroundColor: ["#fca5a5", "#86efac", "#93c5fd"],
+                backgroundColor: ["#ffdd01ff", "#4cc378ff", "#4596f4ff"],
                 borderWidth: 2,
             },
         ],
