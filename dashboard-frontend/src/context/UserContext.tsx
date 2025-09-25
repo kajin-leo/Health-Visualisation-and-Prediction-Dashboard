@@ -7,6 +7,7 @@ interface User {
     firstName: string
     lastName: string
     avatar?: string
+    userId: number
 }
 
 interface UserContextType {
