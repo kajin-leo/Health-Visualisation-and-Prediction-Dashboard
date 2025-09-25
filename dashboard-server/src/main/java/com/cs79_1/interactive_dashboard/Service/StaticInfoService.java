@@ -307,8 +307,8 @@ public class StaticInfoService {
                     user.getFirstName(),
                     user.getLastName(), 
                     user.getAgeYear(), 
-                    user.getSex()
-                
+                    user.getSex(),
+                    user.getId()
                 );
 
                 return dto;
@@ -348,7 +348,8 @@ public class StaticInfoService {
                 user.getFirstName(),
                 user.getLastName(),
                 user.getAgeYear(),
-                user.getSex()
+                user.getSex(),
+                user.getId()
         );
     }
 }
