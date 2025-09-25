@@ -76,7 +76,7 @@ def load_attrs_from_db(sid: int, table_name: str = "users"):
     is_female = 1.0 if int(df.loc[0, "sex"]) == 2 else 0.0
     return age, is_female
 
-@app.route("/api/predict", methods=["POST"])
+@app.route("/api/predict", methods=["GET"])
 def predict():
 
     # ① 获取 sid（比如请求体里传 {"sid":"SYNTH_000410"} 或 form 里传 sid=SYNTH_000410）

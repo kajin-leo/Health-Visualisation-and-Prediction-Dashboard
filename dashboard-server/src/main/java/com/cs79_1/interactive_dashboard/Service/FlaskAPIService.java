@@ -15,21 +15,21 @@ public class FlaskAPIService {
     @Autowired
     private RestTemplate restTemplate;
 
-    @Value("${ML_PORT:5485}")
+    @Value("${ML_PORT:5000}")
     private String mlPort;
 
     private String API_URL;
-
+    
     @PostConstruct
     public void init() {
-        this.API_URL = String.format("http://localhost:%s", mlPort);
+        this.API_URL = String.format("http://ml-service:%s/api/predict", mlPort);
         logger.info("API_URL initialized to: {}", API_URL);
     }
 
     public Object getHeatmap(long userId) {
         logger.info("URL:{}", API_URL);
 
-        String url = API_URL + "?user_id=" + userId;
+        String url = API_URL + "?sid=" + userId;
         return restTemplate.getForObject(url, Object.class);
     }
 }
