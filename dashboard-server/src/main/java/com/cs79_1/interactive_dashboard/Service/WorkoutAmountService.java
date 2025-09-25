@@ -1,15 +1,15 @@
 package com.cs79_1.interactive_dashboard.Service;
 
-import com.cs79_1.interactive_dashboard.DTO.*;
+import com.cs79_1.interactive_dashboard.DTO.Workout.*;
 import com.cs79_1.interactive_dashboard.Entity.WorkoutAmount;
 import com.cs79_1.interactive_dashboard.Repository.WorkoutAmountRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -119,6 +119,33 @@ public class WorkoutAmountService {
 
         return timeOfDayDTO;
     }
+
+    @Cacheable(value="activities", key="#userId")
+    public List<WeeklyAggregatedHourDetails> getAveragedWorkoutDetail(Long userId) {
+        List<WorkoutAmount> workoutAmounts = getWorkoutAmountByUserIdAsc(userId);
+        List<WeeklyAggregatedHourDetails> weeklyAggregatedHourDetailsList = new ArrayList<>();
+        for(int i = 0; i < 24; i++) {
+            weeklyAggregatedHourDetailsList.add(new WeeklyAggregatedHourDetails(i));
+        }
+
+        for (WorkoutAmount workoutAmount : workoutAmounts) {
+            int dayOfWeek = workoutAmount.getDateTime().getDayOfWeek().ordinal();
+
+            int hour = workoutAmount.getDateTime().getHour();
+            int mvpa = workoutAmount.getSumSecondsMVPA3();
+            int light = workoutAmount.getTimesLight3();
+            long id = workoutAmount.getId();
+
+            weeklyAggregatedHourDetailsList.get(hour).addDay(mvpa, light, id, dayOfWeek);
+        }
+
+        return weeklyAggregatedHourDetailsList;
+    }
+
+//    public SimulatedActivityDTO getSimulatedActivity(Long userId) {
+//        getAveragedWorkoutDetail(userId);
+//    }
+
     public WorkoutHeatmapDTO getHeatmapFiltered(Long userId, boolean isWeekend) {
         List<WorkoutAmount> workoutAmounts = getWorkoutAmountByUserIdAsc(userId);
         WorkoutHeatmapDTO heatmapDTO = new WorkoutHeatmapDTO();

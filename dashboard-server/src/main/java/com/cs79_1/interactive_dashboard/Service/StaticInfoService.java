@@ -11,7 +11,8 @@ import com.cs79_1.interactive_dashboard.Repository.WeeklyIntakeRepository;
 import com.cs79_1.interactive_dashboard.Repository.MentalHealthAndDailyRoutineRepository;
 import com.cs79_1.interactive_dashboard.Repository.WeightMetricsRepository;
 import com.cs79_1.interactive_dashboard.DTO.BodyCompositionSummary;
-import com.cs79_1.interactive_dashboard.DTO.FoodIntakeResultDto;
+import com.cs79_1.interactive_dashboard.DTO.DietaryIntake.FoodIntakeResultDto;
+
 import com.cs79_1.interactive_dashboard.DTO.UserInfoResponse;
 
 

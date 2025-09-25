@@ -1,4 +1,4 @@
-package com.cs79_1.interactive_dashboard.DTO;
+package com.cs79_1.interactive_dashboard.DTO.BatchImport;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;

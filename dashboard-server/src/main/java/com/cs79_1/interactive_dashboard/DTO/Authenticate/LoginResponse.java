@@ -1,4 +1,4 @@
-package com.cs79_1.interactive_dashboard.DTO;
+package com.cs79_1.interactive_dashboard.DTO.Authenticate;
 
 public class LoginResponse {
     private String accessToken;

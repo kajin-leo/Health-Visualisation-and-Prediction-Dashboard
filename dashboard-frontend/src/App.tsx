@@ -29,7 +29,7 @@ function ClientLayout({ children }) {
     }
 
     return (
-        <div className="fixed w-full h-full min-h-[800px] flex">
+        <div className="fixed w-full h-full min-h-[650px] flex">
             <div className='absolute -z-100 w-full h-full bg-conic from-blue-100 via-40% via-violet-50 to-blue-100 blur-2xl brightness-90 saturate-200' />
             <div className='w-[250px] m-4 mr-2 flex-shrink-0'>
                 <SideBar className='w-full' />

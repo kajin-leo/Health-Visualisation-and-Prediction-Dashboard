@@ -1,8 +1,8 @@
 package com.cs79_1.interactive_dashboard.Controller;
 
-import com.cs79_1.interactive_dashboard.DTO.LoginRequest;
-import com.cs79_1.interactive_dashboard.DTO.LoginResponse;
-import com.cs79_1.interactive_dashboard.DTO.RegisterRequest;
+import com.cs79_1.interactive_dashboard.DTO.Authenticate.LoginRequest;
+import com.cs79_1.interactive_dashboard.DTO.Authenticate.LoginResponse;
+import com.cs79_1.interactive_dashboard.DTO.Authenticate.RegisterRequest;
 import com.cs79_1.interactive_dashboard.Entity.User;
 import com.cs79_1.interactive_dashboard.Enum.Role;
 import com.cs79_1.interactive_dashboard.Repository.UserRepository;

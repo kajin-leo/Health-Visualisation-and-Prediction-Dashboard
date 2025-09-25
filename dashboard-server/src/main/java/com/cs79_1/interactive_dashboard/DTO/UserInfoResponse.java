@@ -4,13 +4,16 @@ public class UserInfoResponse {
     private String username;
     private String firstName;
     private String lastName;
+
+    private long userId;
     private int ageYear;
     private int sex;
-
-    public UserInfoResponse(String username, String firstName, String lastName, int ageYear, int sex) {
+  
+    public UserInfoResponse(String username, String firstName, String lastName, int ageYear, int sex, long userId) {
         this.username = username;
         this.firstName = firstName;
         this.lastName = lastName;
+        this.userId = userId;
         this.ageYear = ageYear;
         this.sex = sex;
     }
@@ -38,6 +41,15 @@ public class UserInfoResponse {
     public void setLastName(String lastName) {
         this.lastName = lastName;
     }
+
+    public long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(long userId) {
+        this.userId = userId;
+    }
+
     public int getAgeYear() {
         return ageYear;
     }

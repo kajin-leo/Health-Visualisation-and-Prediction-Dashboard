@@ -1,8 +1,8 @@
 package com.cs79_1.interactive_dashboard.Controller;
 
-import com.cs79_1.interactive_dashboard.DTO.WorkoutDailyDTO;
-import com.cs79_1.interactive_dashboard.DTO.WorkoutTimeOfDayDTO;
-import com.cs79_1.interactive_dashboard.DTO.WorkoutHeatmapDTO;
+import com.cs79_1.interactive_dashboard.DTO.Workout.WorkoutDailyDTO;
+import com.cs79_1.interactive_dashboard.DTO.Workout.WorkoutTimeOfDayDTO;
+import com.cs79_1.interactive_dashboard.DTO.Workout.WorkoutHeatmapDTO;
 import com.cs79_1.interactive_dashboard.Security.SecurityUtils;
 import com.cs79_1.interactive_dashboard.Service.WorkoutAmountService;
 import org.slf4j.Logger;
@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;

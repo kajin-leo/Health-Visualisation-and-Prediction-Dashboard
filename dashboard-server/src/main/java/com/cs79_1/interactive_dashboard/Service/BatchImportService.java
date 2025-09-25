@@ -1,7 +1,7 @@
 package com.cs79_1.interactive_dashboard.Service;
 
-import com.cs79_1.interactive_dashboard.DTO.FileInfo;
-import com.cs79_1.interactive_dashboard.DTO.ImportProgress;
+import com.cs79_1.interactive_dashboard.DTO.BatchImport.FileInfo;
+import com.cs79_1.interactive_dashboard.DTO.BatchImport.ImportProgress;
 import com.cs79_1.interactive_dashboard.Entity.*;
 import com.cs79_1.interactive_dashboard.Enum.HFZClassification;
 import com.cs79_1.interactive_dashboard.Enum.MentalStrength;
