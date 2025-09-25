@@ -7,7 +7,7 @@ export const userAPI = {
   },
 
   getHeatMapData: async (credentials: { sid: string }) => {
-    const response = await mlClient.post('/predict', credentials);
+    const response = await apiClient.post('/simulation/heatmap', credentials);
     return response.data;
   }
   
