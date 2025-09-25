@@ -152,7 +152,7 @@ const WeightMetrics = () => {
     return (
         <div className='w-full h-full justify-between flex flex-col overflow-visible'>
             <div className='flex justify-between items-baseline'>
-                <h1 className="w-fit opacity-100 rounded-lg text-gray-800 pl-1 text-lg tracking-tight font-bold font-[Nunito] min-h-10 flex-shrink-0">
+                <h1 className="w-fit opacity-100 rounded-lg text-gray-800 pl-1 text-lg tracking-tight font-bold font-[Nunito] min-h-5 flex-shrink-0">
                     Weight Metrics
                 </h1>
                 <div className='flex gap-2 text-sm bg-white p-1 px-2 rounded-full shadow-md/20'>
