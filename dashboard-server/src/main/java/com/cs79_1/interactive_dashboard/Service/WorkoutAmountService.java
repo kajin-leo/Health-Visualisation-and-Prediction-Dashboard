@@ -142,9 +142,9 @@ public class WorkoutAmountService {
         return weeklyAggregatedHourDetailsList;
     }
 
-    public SimulatedActivityDTO getSimulatedActivity(Long userId) {
-        getAveragedWorkoutDetail(userId);
-    }
+//    public SimulatedActivityDTO getSimulatedActivity(Long userId) {
+//        getAveragedWorkoutDetail(userId);
+//    }
 
     public WorkoutHeatmapDTO getHeatmapFiltered(Long userId, boolean isWeekend) {
         List<WorkoutAmount> workoutAmounts = getWorkoutAmountByUserIdAsc(userId);

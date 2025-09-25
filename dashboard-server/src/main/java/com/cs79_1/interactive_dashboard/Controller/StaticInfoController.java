@@ -1,7 +1,7 @@
 package com.cs79_1.interactive_dashboard.Controller;
 
 import com.cs79_1.interactive_dashboard.DTO.*;
-import com.cs79_1.interactive_dashboard.DTO.DIetaryIntake.FoodIntakeResultDto;
+import com.cs79_1.interactive_dashboard.DTO.DietaryIntake.FoodIntakeResultDto;
 import com.cs79_1.interactive_dashboard.DTO.Workout.WorkoutOverviewDTO;
 import com.cs79_1.interactive_dashboard.Security.SecurityUtils;
 import com.cs79_1.interactive_dashboard.Service.StaticInfoService;

@@ -1,4 +1,4 @@
-package com.cs79_1.interactive_dashboard.DTO.DIetaryIntake;
+package com.cs79_1.interactive_dashboard.DTO.DietaryIntake;
 
 public class FoodIntakeSummary {
     private double energy;

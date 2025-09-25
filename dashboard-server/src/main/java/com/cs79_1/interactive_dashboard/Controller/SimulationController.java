@@ -14,6 +14,6 @@ public class SimulationController {
     @GetMapping("/heatmap")
     public ResponseEntity<?> getHeatmap() {
         long userId = SecurityUtils.getCurrentUserId();
-
+        return ResponseEntity.ok().build();
     }
 }

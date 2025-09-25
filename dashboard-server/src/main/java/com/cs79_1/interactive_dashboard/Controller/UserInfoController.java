@@ -38,7 +38,7 @@ public class UserInfoController {
             String lastName = user.getLastName();
             if(firstName == null || firstName.isEmpty()) firstName = "Participant";
             if(lastName == null || lastName.isEmpty()) lastName = username.substring(6);
-            UserInfoResponse userInfoResponse = new UserInfoResponse(username, firstName, lastName);
+            UserInfoResponse userInfoResponse = new UserInfoResponse(username, firstName, lastName, user.getId());
 
             logger.info("User {} fetched info", username);
             return ResponseEntity.ok(userInfoResponse);
