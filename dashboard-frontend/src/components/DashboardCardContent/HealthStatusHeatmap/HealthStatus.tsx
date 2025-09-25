@@ -223,7 +223,7 @@ export default function HeatmapChart({ group }: { group: "weekdays" | "weekends"
         {loading && <span className="text-sm text-gray-500">Loading…</span>}
       </div>{loading && <span className="text-sm text-gray-500">Loading…</span>}
 
-      <div className="w-full h-full">
+      <div style={{ width: "90%", height: 180 }}>
         <Chart type="matrix" data={data} options={options as any} />
       </div>
     </div>
