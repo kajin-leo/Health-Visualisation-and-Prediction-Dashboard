@@ -235,6 +235,13 @@ public class StaticInfoService {
         return dto;
     }
 
+    public String getHFZClassification(long userId) {
+        BodyComposition bc = bodyCompositionRepository.findByUserId(userId).orElseThrow();
+        HFZClassification classification = bc.getHfzBMI();
+
+        return classification.name();
+    }
+
     @Service
     public class FoodIntakeService {
 
