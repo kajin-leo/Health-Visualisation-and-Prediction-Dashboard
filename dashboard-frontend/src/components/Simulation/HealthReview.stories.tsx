@@ -10,14 +10,26 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-const MockData = {
+const mockData = {
     groundTruth: "NI",
-    newClassification: "NIHR",
-    possibility: 90
+    prediction: {
+        newClassification: "NIHR",
+        possibility: 90
+    }
+}
+
+const mockDataAlt = {
+    groundTruth: "HFZ"
 }
 
 export const Default: Story = {
     args: {
-        MockData: MockData
+        data: mockData
     }
 };
+
+export const Altered: Story = {
+    args: {
+        data: mockDataAlt
+    }
+}
