@@ -41,3 +41,5 @@ server:
 jwt:
   secret: ${JWT_SECRET:1nteractive-dashb0ard-s1mulating-phys1cal-activ1ty-changes-and-predicting-health-0utcomes}
   expiration: 86400000
+
+ML_PORT: 5485

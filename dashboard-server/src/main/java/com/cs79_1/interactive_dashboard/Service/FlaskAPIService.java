@@ -21,11 +21,14 @@ public class FlaskAPIService {
     @Value("${ML_PORT:5000}")
     private String mlPort;
 
+    @Value("${ML_HOST:localhost}")
+    private String mlHost;
+
     private String API_URL;
     
     @PostConstruct
     public void init() {
-        this.API_URL = String.format("http://ml-service:%s/api/predict", mlPort);
+        this.API_URL = String.format("http://%s:%s/api/predict", mlHost, mlPort);
         logger.info("API_URL initialized to: {}", API_URL);
     }
 
