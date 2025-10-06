@@ -14,7 +14,7 @@ from sqlalchemy import create_engine, text
 app = Flask(__name__)
 CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
 
-CHECKPOINT = r"../checkpoints/model_best.pth"     # 你的ckpt路径
+CHECKPOINT = r"../checkpoints/model_best.pth"     # ckpt路径
 # CSV_PATH   = r"dashboard-ml/SYNTH_000410.csv"  # 这次要预测的那份CSV
 # ATTR_CSV   = r"C:/Users/wshiy/Desktop/USDY/COMP5703/data/CS79_1/individual_attributes.csv"
 
@@ -78,6 +78,140 @@ def load_attrs_from_db(sid: int, table_name: str = "users"):
 
 @app.route("/api/predict", methods=["GET"])
 def predict():
+
+    # ① 获取 sid（比如请求体里传 {"sid":"SYNTH_000410"} 或 form 里传 sid=SYNTH_000410）
+    sid = (request.values.get("sid")
+           or (request.json.get("sid") if request.is_json else None))
+    if not sid:
+        return jsonify({"error": "missing 'sid'"}), 400
+
+    try:
+        df = load_timeseries_from_db(sid)      # 返回列正好是 f1,f2,f3
+        df["ts"] = pd.to_datetime(df["ts"], errors="coerce")
+        age, is_female = load_attrs_from_db(sid)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 404
+
+    feat = df[["f1", "f2", "f3"]].copy()
+    feat.columns = ["f1", "f2", "f3"]
+
+    # ====== 归一化 ======
+    feat = normalizer.normalize(feat)
+
+    # ====== pad or truncate ======
+    T = len(feat)
+    L = MAX_SEQ_LEN
+    if T >= L:
+        feat = feat.iloc[:L, :].reset_index(drop=True)
+        timeline = df["ts"].iloc[:L].reset_index(drop=True)
+    else:
+        pad_rows = L - T
+        pad_df = pd.DataFrame(PAD_VALUE, index=range(pad_rows), columns=feat.columns)
+        feat = pd.concat([feat, pad_df], axis=0, ignore_index=True)
+        timeline = pd.concat([df["ts"], pd.Series([pd.NaT]*pad_rows)], ignore_index=True)
+
+    valid_len = min(T, L)
+    pad_len = L - valid_len
+    padding_mask = torch.ones(L, dtype=torch.bool)
+    if pad_len > 0:
+        padding_mask[-pad_len:] = False
+    padding_mask = padding_mask.unsqueeze(0).to(device)
+
+    # ====== tensor ======
+    x = torch.from_numpy(feat.values.astype(np.float32)).unsqueeze(0).to(device)
+    x.requires_grad_(True)
+
+    # ====== 静态特征（来自数据库）======
+    s_static = torch.tensor([[age, is_female]], dtype=torch.float32).to(device)
+
+    # ====== forward ======
+    model.eval()
+    logits = model(x, padding_masks=padding_mask, static_features=s_static)
+    probs = torch.softmax(logits, dim=1).detach().cpu().numpy().flatten().tolist()
+
+    # ====== backward for AttCAT ======
+    target = logits.gather(1, logits.argmax(1, keepdim=True)).sum()
+    model.zero_grad(set_to_none=True)
+    target.backward()
+
+    attns  = [d['weights'] for d in collector.attn_per_layer]
+    hiddens = [rec['output'] for rec in collector.hidden_per_layer]
+
+    cats = []
+    for h in hiddens:
+        g = h.grad
+        if h.shape[0] != x.shape[0]:  # [T,B,D] → [B,T,D]
+            h = h.permute(1,0,2).contiguous()
+            g = g.permute(1,0,2).contiguous()
+        cats.append(h * g)   # [B,T,D]
+
+    att_scores = []
+    for cat, attn in zip(cats, attns):
+        a = attn.mean(1).mean(1).unsqueeze(-1)  # [B,T,1]
+        score = (cat * a).squeeze(0).detach().cpu().numpy()  # [T,D]
+        att_scores.append(score)
+
+    impact = np.sum(att_scores, axis=0)  # [T,D]，D=3
+    vmax = np.percentile(np.abs(impact), 99)
+    if vmax == 0: vmax = 1e-6
+    impact = np.clip(impact, -vmax, vmax) / vmax
+    # ====== 只保留有效长度（去掉 pad）======
+    impact = impact[:valid_len, :]               # [valid_len, 3]
+    timeline_valid = timeline[:valid_len]
+    MVPA_IDX = 0
+    LIGHT_IDX = 2
+    mvpa_vals  = df["f1"].iloc[:valid_len].tolist()
+    light_vals = df["f3"].iloc[:valid_len].tolist()
+    BIN_EDGES = [(0,600), (600,1200), (1200,1800), (1800,2400), (2400,3000), (3000,3600)]
+    BIN_LABELS = [f"{lo}-{hi}" for (lo,hi) in BIN_EDGES]
+
+    def _num(x):
+        try:
+            return None if (x is None or pd.isna(x)) else float(x)
+        except Exception:
+            return None
+    
+    def sec_to_bin_label(v: int):
+        if v is None:
+            return None
+        try:
+            x = float(v)
+        except Exception:
+            return None
+        for (lo, hi), lab in zip(BIN_EDGES, BIN_LABELS):
+            if lo <= x < hi:
+                return lab
+        return BIN_LABELS[-1]
+
+    # def _to_iso(ts: pd.Timestamp):
+    #     if pd.isna(ts):
+    #         return None
+    #     return ts.isoformat()  # "YYYY-MM-DDTHH:MM:SS"
+
+    hours    = timeline_valid.dt.hour.fillna(-1).astype(int).tolist()     
+    weekdays = timeline_valid.dt.weekday.fillna(-1).astype(int).tolist()  
+    # ts_iso   = [ _to_iso(t) for t in timeline_valid ]
+
+    mvpa_impact = [
+        # {"ts": ts_iso[i],
+        {"value": _num(mvpa_vals[i]), "impact": float(impact[i, MVPA_IDX]), "hour": int(hours[i]), "weekday": int(weekdays[i]), "bin": sec_to_bin_label(mvpa_vals[i])}
+        for i in range(valid_len)
+    ]
+    light_impact = [
+        # {"ts": ts_iso[i], 
+        {"value": _num(light_vals[i]), "impact": float(impact[i, LIGHT_IDX]),"hour": int(hours[i]), "weekday": int(weekdays[i]), "bin": sec_to_bin_label(light_vals[i])}
+        for i in range(valid_len)
+    ]
+
+    return jsonify({
+        "sid": sid,
+        "probs": {cls: prob for cls, prob in zip(CLASS_NAMES, probs)},
+        "mvpa_impact": mvpa_impact,
+        "light_impact": light_impact
+    })
+
+@app.route("/api/simulate", methods=["POST"])
+def simulate():
 
     # ① 获取 sid（比如请求体里传 {"sid":"SYNTH_000410"} 或 form 里传 sid=SYNTH_000410）
     sid = (request.values.get("sid")
