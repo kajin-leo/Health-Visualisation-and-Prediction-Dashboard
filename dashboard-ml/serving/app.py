@@ -15,7 +15,7 @@ from threading import Lock
 app = Flask(__name__)
 CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
 
-CHECKPOINT = r"../checkpoints/model_best.pth"     # 你的ckpt路径
+CHECKPOINT = r"../checkpoints/model_best.pth"     # ckpt路径
 # CSV_PATH   = r"dashboard-ml/SYNTH_000410.csv"  # 这次要预测的那份CSV
 # ATTR_CSV   = r"C:/Users/wshiy/Desktop/USDY/COMP5703/data/CS79_1/individual_attributes.csv"
 
@@ -232,7 +232,6 @@ def predict():
         "mvpa_impact": mvpa_impact,
         "light_impact": light_impact
     })
-
 
 @app.route("/api/predict", methods=["POST"])
 def simulate_predict():
