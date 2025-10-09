@@ -98,8 +98,10 @@ const SimulateActivity = ({ MockData, isWeekend }: { MockData?: ActivityData, is
     const onDragEnd = (datasetIndex: number, index: number, value: number) => {
         if (!chartData) return;
         const dataset = datasetIndex == 0 ? 'mvpa' : 'light';
+        const counterDataset = datasetIndex == 0 ? 'light' : 'mvpa';
         if (chartData[dataset][index] !== value) setCanSimulate(true);
         chartData[dataset][index] = value;
+        chartData[counterDataset][index] = Math.min(chartData[counterDataset][index], 3600 - value);
     }
 
     if (!isDataReady) {

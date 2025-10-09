@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import 'chartjs-plugin-dragdata';
 import { Chart } from "chart.js/auto";
 import { type ActivityData } from './SimulateActivity';
@@ -6,6 +6,7 @@ import { type ActivityData } from './SimulateActivity';
 const SimulateActivityChart = ({data, DragEndCallback, resetTrigger} : {data: ActivityData, DragEndCallback? : (datasetIndex: number, index: number, value: number) => void, resetTrigger: number}) => {
     const chartRef = useRef<HTMLCanvasElement>(null);
     const chartInstance = useRef<Chart | null>(null);
+    const [upLimit, setUpLimit] = useState(Math.min(600, Number(((Math.max(...data.mvpa, ...data.light) + 300) / 1000).toFixed(1)) * 1000));
 
     useEffect(() => {
         if (!chartRef.current) return;
@@ -17,6 +18,8 @@ const SimulateActivityChart = ({data, DragEndCallback, resetTrigger} : {data: Ac
 
         const ctx = chartRef.current.getContext('2d');
         if (!ctx) return;
+
+        setUpLimit(Math.min(600, Number(((Math.max(...data.mvpa, ...data.light) + 300) / 1000).toFixed(1)) * 1000));
 
         const chartData = {
             labels: [...data.description],
@@ -66,6 +69,15 @@ const SimulateActivityChart = ({data, DragEndCallback, resetTrigger} : {data: Ac
                             // setDragIndex(-1);
 
                             const numericValue = value != null ? Number(value) : 0;
+                            const currentMax = Math.min(3600, Number((Math.max((numericValue + 300), Math.max(...data.mvpa, ...data.light) + 300) / 1000).toFixed(1)) * 1000);
+
+                            if (chartInstance.current && chartInstance.current.options.scales?.y) {
+                                chartInstance.current.data.datasets[1 - datasetIndex].data[index] = Math.min(3600 - numericValue, Number(chartInstance.current.data.datasets[1 - datasetIndex].data[index]));
+                                chartInstance.current.options.scales.y.max = currentMax;
+                                chartInstance.current.update('none'); // 'none' 表示不播放动画，更快
+                            }
+
+                            setUpLimit(currentMax);
 
                             if (DragEndCallback) {
                                 DragEndCallback(datasetIndex, index, numericValue);
@@ -81,7 +93,7 @@ const SimulateActivityChart = ({data, DragEndCallback, resetTrigger} : {data: Ac
                         },
                         beginAtZero: true,
                         min:0,
-                        max:3600
+                        max:upLimit
                     }
                 }
             }
