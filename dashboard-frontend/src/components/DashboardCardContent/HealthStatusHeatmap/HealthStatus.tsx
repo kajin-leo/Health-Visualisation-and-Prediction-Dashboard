@@ -214,6 +214,7 @@ export default function HeatmapChart({ group, activityType }: { group: "weekdays
             title: () => "",
           },
         },
+        dragData: false,
       },
     }),
     []
