@@ -1,14 +1,15 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { apiClient } from "../../../service/axios";
+import { Spinner } from "@heroui/react";
 
 type CategoryColor = {
-    bg: string; 
+    bg: string;
     text: string;
 }
 
 const categoryColors = (classification: string) => {
-    const catColor:CategoryColor = {bg: 'bg-white', text:'text-black'};
-    switch(classification) {
+    const catColor: CategoryColor = { bg: 'bg-white', text: 'text-black' };
+    switch (classification) {
         case 'HFZ':
             catColor.bg = 'bg-green-300/50';
             catColor.text = 'text-green-600';
@@ -25,17 +26,20 @@ const categoryColors = (classification: string) => {
             catColor.bg = 'bg-lime-300/50';
             catColor.text = 'text-lime-600';
             break;
+        default:
+            catColor.bg = 'bg-gray-200/50';
+            catColor.text = 'text-gray-600'
     }
     return catColor;
 }
 
 /* ---------- 内部统一结构 ---------- */
 type Metrics = {
-    height : number;
-    weight : number;
-    waistSize : number;
-    bmi : number;
-    classification : string;
+    height: number;
+    weight: number;
+    waistSize: number;
+    bmi: number;
+    classification: string;
 };
 
 /* ---------- Arc Gauge ---------- */
@@ -103,25 +107,36 @@ const Tile: React.FC<{ label: string; value: string; unit?: string }> = ({ label
 };
 
 /* ---------- 主组件 ---------- */
-const BmiCard = ({mock, ...props} : {mock? : Metrics, props : React.ReactNode}) => {
+const BmiCard = ({ mock, ...props }: { mock?: Metrics, props?: React.ReactNode }) => {
     const [metrics, setMetrics] = useState<Metrics>();
-    var catColor = categoryColors('HFZ');
+    const [catColor, setColor] = useState(categoryColors('-'));
+    const [dataReady, setDataReady] = useState(false);
+
+    const fetch = async () => {
+        try {
+            const response = await apiClient.get('/static/bodymetrics-overview');
+            const data = response.data;
+            console.log("BMICard", data);
+            setMetrics(data);
+            setColor(categoryColors(data!.classification));
+            setDataReady(true);
+        } catch (error) {
+            console.error(error);
+        }
+    }
 
     useEffect(() => {
-        const fetch = async() => {
-            try {
-                const response = await apiClient.get('/static/bodymetrics-overview');
-                const data = response.data;
-                setMetrics(data);
-            } catch (error) {
-                console.error(error);
-            }
-        }
-        
-        if(!mock) fetch();
+        if (!mock) fetch();
         else setMetrics(mock);
-        catColor = categoryColors(metrics?.classification ?? 'HFZ');
     }, [mock]);
+
+    if (!dataReady) {
+        return (
+            <div className="w-full h-full flex flex-col items-center justify-center">
+                <Spinner />
+            </div>
+        )
+    }
 
     return (
         <div
