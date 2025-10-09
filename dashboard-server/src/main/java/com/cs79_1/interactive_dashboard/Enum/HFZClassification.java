@@ -4,8 +4,8 @@ package com.cs79_1.interactive_dashboard.Enum;
 public enum HFZClassification {
     HFZ("Healthy Fitness Zone"),
     NI("Needs Improvement"),
-    NIHR("Needs Improvement - Health Risk"),
-    VL("Very Low");
+    NIHR("Needs Improvement - Hight Risk"),
+    VL("Very Lean");
 
     private String description;
 

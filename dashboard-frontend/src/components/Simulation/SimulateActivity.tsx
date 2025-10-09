@@ -57,6 +57,7 @@ const SimulateActivity = ({ MockData, isWeekend }: { MockData?: ActivityData, is
             });
         } else {
             if (!chartData) return;
+            if (!canSimulate) return;
             try {
                 setIsSimulating(true);
                 const response = await apiClient.post("/simulation/predict", {

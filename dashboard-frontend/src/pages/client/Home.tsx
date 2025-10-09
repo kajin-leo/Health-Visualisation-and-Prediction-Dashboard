@@ -14,7 +14,7 @@ const Home = () => {
             </DashboardCard>
 
             <DashboardCard id='Basic' className=' md:col-span-2 lg:col-span-3'>
-                <BmiCard showLabels={true} />
+                <BmiCard />
             </DashboardCard>
 
             <DashboardCard id='avg daily intake' className='text-4xl font-light md:col-span-2 lg:col-span-5'>

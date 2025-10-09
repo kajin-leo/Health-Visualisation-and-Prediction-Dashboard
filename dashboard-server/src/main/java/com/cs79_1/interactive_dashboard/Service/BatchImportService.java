@@ -480,6 +480,8 @@ public class BatchImportService {
                 return HFZClassification.NI;
             case "NIHR":
                 return HFZClassification.NIHR;
+            case "VL":
+                return HFZClassification.VL;
             default:
                 return HFZClassification.HFZ;
         }

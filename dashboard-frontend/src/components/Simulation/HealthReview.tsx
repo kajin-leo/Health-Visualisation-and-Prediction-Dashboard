@@ -11,13 +11,13 @@ type ReviewData = {
 
 const HealthLabelMappedOutlineColor = (label: string) => {
     switch (label) {
-        case "NI":
-            return "outline-yellow-600";
+        case "VL":
+            return "outline-lime-600";
         case "HFZ":
             return "outline-green-600";
-        case "NIHR":
+        case "NI":
             return "outline-orange-500";
-        case "VL":
+        case "NIHR":
             return "outline-red-600";
         default:
             return "outline-slate-600"
@@ -26,13 +26,13 @@ const HealthLabelMappedOutlineColor = (label: string) => {
 
 const HealthLabelMappedTextColor = (label: string) => {
     switch (label) {
-        case "NI":
-            return "text-yellow-600";
+        case "VL":
+            return "text-lime-600";
         case "HFZ":
             return "text-green-600";
-        case "NIHR":
+        case "NI":
             return "text-orange-500";
-        case "VL":
+        case "NIHR":
             return "text-red-600";
         default:
             return "text-slate-600"
@@ -41,13 +41,13 @@ const HealthLabelMappedTextColor = (label: string) => {
 
 const HealthLabelMappedBackgroundColor = (label: string) => {
     switch (label) {
-        case "NI":
-            return "bg-yellow-500/20";
+        case "VL":
+            return "bg-lime-500/20";
         case "HFZ":
             return "bg-green-400/20";
-        case "NIHR":
+        case "NI":
             return "bg-orange-500/20";
-        case "VL":
+        case "NIHR":
             return "bg-red-600/20";
         default:
             return "bg-slate-400/20"
