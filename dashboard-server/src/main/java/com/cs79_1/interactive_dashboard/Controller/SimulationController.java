@@ -6,14 +6,13 @@ import com.cs79_1.interactive_dashboard.DTO.Simulation.PredictionResultDTO;
 import com.cs79_1.interactive_dashboard.DTO.Simulation.StructuredActivityDTO;
 import com.cs79_1.interactive_dashboard.DTO.Workout.WeeklyAggregatedHourDetails;
 import com.cs79_1.interactive_dashboard.Security.SecurityUtils;
-import com.cs79_1.interactive_dashboard.Service.FlaskAPIService;
-import com.cs79_1.interactive_dashboard.Service.StaticInfoService;
-import com.cs79_1.interactive_dashboard.Service.WorkoutAmountService;
+import com.cs79_1.interactive_dashboard.Service.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.List;
 
@@ -29,7 +28,12 @@ public class SimulationController {
     @Autowired
     StaticInfoService staticInfoService;
 
+    @Autowired
+    SseService sseService;
+
     private static final Logger logger = LoggerFactory.getLogger(SimulationController.class);
+    @Autowired
+    private SimulationService simulationService;
 
     @GetMapping("/heatmap")
     public ResponseEntity<?> getHeatmap() {
@@ -70,7 +74,7 @@ public class SimulationController {
     }
 
     @PostMapping("/predict")
-    public ResponseEntity<PredictionResultDTO> predict(@RequestBody PredictionRequestDTO request) {
+    public ResponseEntity<String> predict(@RequestBody PredictionRequestDTO request) {
         long userId = SecurityUtils.getCurrentUserId();
         try {
             AlteredActivityPredictionRequest predictionRequest = new AlteredActivityPredictionRequest(userId, !request.isWeekend());
@@ -82,12 +86,21 @@ public class SimulationController {
                 predictionRequest.addLight(i, lightScale);
             }
 
-            PredictionResultDTO result = flaskAPIService.sendPredictionRequest(predictionRequest).getBody();
-            return ResponseEntity.ok(result);
+//            PredictionResultDTO result = flaskAPIService.sendPredictionRequest(predictionRequest).getBody();
+            String taskId = simulationService.createPredictionTask(userId, predictionRequest);
+            return ResponseEntity.ok(taskId);
         } catch (Exception e) {
             logger.error("Error fetching simulation chart data for user {}", userId, e);
             return ResponseEntity.internalServerError().build();
         }
     }
+
+    @GetMapping("/stream/{taskId}")
+    public SseEmitter stream(@PathVariable String taskId) {
+        SseEmitter emitter = sseService.getOrRegisterEmitter(taskId);
+        return emitter;
+    }
+
+
 
 }
