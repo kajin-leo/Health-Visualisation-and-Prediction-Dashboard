@@ -1,9 +1,6 @@
 package com.cs79_1.interactive_dashboard.Controller;
 
-import com.cs79_1.interactive_dashboard.DTO.Simulation.AlteredActivityPredictionRequest;
-import com.cs79_1.interactive_dashboard.DTO.Simulation.PredictionRequestDTO;
-import com.cs79_1.interactive_dashboard.DTO.Simulation.PredictionResultDTO;
-import com.cs79_1.interactive_dashboard.DTO.Simulation.StructuredActivityDTO;
+import com.cs79_1.interactive_dashboard.DTO.Simulation.*;
 import com.cs79_1.interactive_dashboard.DTO.Workout.WeeklyAggregatedHourDetails;
 import com.cs79_1.interactive_dashboard.Security.SecurityUtils;
 import com.cs79_1.interactive_dashboard.Service.*;
@@ -39,13 +36,19 @@ public class SimulationController {
     public ResponseEntity<?> getHeatmap() {
         long userId = SecurityUtils.getCurrentUserId();
         try {
-            Object response = flaskAPIService.getHeatmap(userId);
-            return ResponseEntity.ok(response);
+            if (simulationService.getHeatmap(userId) == null) {
+                String taskId = simulationService.getOrCreateHeatmapTask(userId);
+                HeatmapQueryResponseDTO dto = new HeatmapQueryResponseDTO(null, false, taskId);
+                return ResponseEntity.ok(dto);
+            } else {
+                Object heatmap = simulationService.getHeatmap(userId);
+                HeatmapQueryResponseDTO dto = new HeatmapQueryResponseDTO(heatmap, true, null);
+                return ResponseEntity.ok(dto);
+            }
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.internalServerError().build();
         }
-
     }
 
     @GetMapping("/chart")
@@ -100,7 +103,4 @@ public class SimulationController {
         SseEmitter emitter = sseService.getOrRegisterEmitter(taskId);
         return emitter;
     }
-
-
-
 }
