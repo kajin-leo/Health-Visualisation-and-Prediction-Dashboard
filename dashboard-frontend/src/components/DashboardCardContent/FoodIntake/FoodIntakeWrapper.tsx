@@ -16,6 +16,7 @@ const FoodIntakeWrapper: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedGoal, setSelectedGoal] = useState("balanced");
   const [actualData, setActualData] = useState<GroupDatum[]>([]);
+  const [recommendedData, setRecommendedData] = useState<GroupDatum[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -27,18 +28,19 @@ const FoodIntakeWrapper: React.FC = () => {
     setError(null);
 
 try {
-  const res = await apiClient.get("/food-intake/intake-by-category");
+  const res = await apiClient.get(`/food-intake/intake-by-category?goal=${selectedGoal}`);
   console.log("Calling intake-by-category with baseURL:", (apiClient as any).defaults?.baseURL);
   console.log("food-intake/intake-by-category response:", res);
 
   const formatted: GroupDatum[] = res.data.map((item: any) => ({
-    group: item.group,          
-    actual: item.actual,        
-    recommended: 100,           // temporary placeholder, must be > 0 for bars to show
+    group: item.group,
+    actual: item.actual,
+    recommended: item.recommended, 
   }));
 
 
   setActualData(formatted);
+  setRecommendedData(formatted);
 } catch (err: any) {
       console.error(
         "food-intake/intake-by-category error:",
@@ -60,7 +62,7 @@ try {
     if (isOpen) {
       fetchWeeklyIntake();
     }
-  }, [isOpen]);
+  }, [isOpen, selectedGoal]);
 
   const dietGoals = [
     { key: "balanced", label: "Balanced Diet" },
@@ -104,8 +106,8 @@ try {
                   Failed to load data: {error}
                 </div>
               ) : (
-                <FoodBarGraph data={actualData} />
-              )}
+              <FoodBarGraph data={recommendedData} />
+             )}
             </ModalBody>
           </ModalContent>
         </Modal>
