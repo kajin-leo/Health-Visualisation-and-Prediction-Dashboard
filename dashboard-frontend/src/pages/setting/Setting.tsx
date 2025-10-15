@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import AvatarUploader from "../../components/Settings/AvatarUploader";
 import { userAPI } from "../../service/api";
-import defaultAvartar from "../../assets/1.png";
+import defaultAvartar from "../../assets/豹豹Idle.svg";
 
 
 
@@ -108,7 +108,7 @@ const Settings = () => {
 
                     <AvatarUploader
                         currentAvatar={avatarUrl}
-                        isUploading={isUploading}
+                        // isUploading={isUploading}
                         onFileSelect={handleFileSelect} />
 
                 </div>
