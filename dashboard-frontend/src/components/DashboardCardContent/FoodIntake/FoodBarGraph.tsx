@@ -20,8 +20,8 @@ export type GroupDatum = {
 
 type Props = {
   data: GroupDatum[];
-  valueSuffix?: string;   // e.g. "g" or "serves"
-  max?: number;           // optional max for Y axis
+  valueSuffix?: string;   
+  max?: number;          
 };
 
 const defaultColors = {
@@ -31,7 +31,6 @@ const defaultColors = {
 
 
 export default function FoodBarGraph({ data, valueSuffix = "", max }: Props) {
-  // Compute a safe domain if max not provided
   const domainMax =
     max ??
     Math.max(
@@ -47,12 +46,19 @@ export default function FoodBarGraph({ data, valueSuffix = "", max }: Props) {
           <XAxis dataKey="group" angle={-20} textAnchor="end" interval={0} height={48} />
           <YAxis domain={[0, Math.ceil(domainMax)]} />
           <Tooltip
-            formatter={(value: number, name: string) => {
-              return [`${value}${valueSuffix}`, name === "actual" ? "Actual" : "Recommended"];
+            formatter={(value: number, _name: string, props: any) => {
+              const key = props.dataKey;
+              const label =
+                key === "actual" ? "Actual" : "Recommended";
+
+              const formattedValue =
+                typeof value === "number" ? value.toFixed(2) : value;
+
+              return [`${formattedValue}${valueSuffix}`, label];
             }}
             labelFormatter={(label) => `Group: ${label}`}
             contentStyle={{ borderRadius: 8 }}
-          />
+/>
           <Legend verticalAlign="top" height={36} />
           <Bar dataKey="recommended" name="Recommended" 
           fill={defaultColors.recommended} radius={[6, 6, 0, 0]} barSize={18} />

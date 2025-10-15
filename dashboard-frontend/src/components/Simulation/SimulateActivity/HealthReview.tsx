@@ -6,22 +6,8 @@ type ReviewData = {
     prediction?: {
         newClassification: string;
         possibility: number;
-    }
-}
-
-const HealthLabelMappedOutlineColor = (label: string) => {
-    switch (label) {
-        case "VL":
-            return "outline-lime-600";
-        case "HFZ":
-            return "outline-green-600";
-        case "NI":
-            return "outline-orange-500";
-        case "NIHR":
-            return "outline-red-600";
-        default:
-            return "outline-slate-600"
-    }
+    };
+    isLoading: boolean;
 }
 
 const HealthLabelMappedTextColor = (label: string) => {
@@ -80,6 +66,18 @@ const HealthReview = ({ data }: { data?: ReviewData }) => {
                                 <h2 className="text-xs opacity-50">Ground Truth</h2>
                                 <h1 className="text-xl font-[Nunito] font-semibold">{reviewData?.groundTruth ?? '--'}</h1>
                             </div>
+                            {
+                                reviewData!.isLoading ?
+                                    (
+                                        <div className="flex flex-col items-center justify-center bg-stone-100 text-stone-600 gap-4 p-4 pt-2">
+                                            <h3>Prediction</h3>
+                                            {/* <h1 className="text-5xl font-[Nunito] font-bold">?</h1> */}
+                                            <Spinner color="default" size="sm"/>
+                                        </div>
+                                    ) : (<></>)
+
+                            }
+
                             {
                                 reviewData!.prediction ?
                                     (

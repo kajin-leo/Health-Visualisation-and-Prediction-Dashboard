@@ -1,16 +1,20 @@
 package com.cs79_1.interactive_dashboard.Controller;
 
 import com.cs79_1.interactive_dashboard.DTO.*;
-
+import com.cs79_1.interactive_dashboard.DTO.DietaryIntake.FoodIntakeByCategory;
 import com.cs79_1.interactive_dashboard.DTO.DietaryIntake.FoodIntakeResultDto;
 import com.cs79_1.interactive_dashboard.DTO.Workout.WorkoutOverviewDTO;
-
+import com.cs79_1.interactive_dashboard.Entity.BodyMetrics;
+import com.cs79_1.interactive_dashboard.Entity.WeeklyIntake;
+import com.cs79_1.interactive_dashboard.Repository.WeeklyIntakeRepository;
 import com.cs79_1.interactive_dashboard.Security.SecurityUtils;
 import com.cs79_1.interactive_dashboard.Service.StaticInfoService;
 import com.cs79_1.interactive_dashboard.Service.StaticInfoService.FoodIntakeService;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
 
 import com.cs79_1.interactive_dashboard.Service.WorkoutAmountService;
 import org.slf4j.Logger;
@@ -19,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import org.springframework.web.bind.annotation.PathVariable;
@@ -146,26 +151,7 @@ public class StaticInfoController {
             return ResponseEntity.internalServerError().build();
         }
     }
-
-    @RestController
-    @RequestMapping("/api/food-intake")
-    public class FoodIntakeController {
-
-        @GetMapping("/food-intake")
-        public ResponseEntity<FoodIntakeResultDto> getFoodIntake() {
-            long userId = SecurityUtils.getCurrentUserId();
-            FoodIntakeResultDto dto = foodIntakeService.calculateFoodIntake(userId);
-            return ResponseEntity.ok(dto);
-        }
-        @Autowired
-        private FoodIntakeService foodIntakeService;
-
-        @GetMapping("/rings")
-        public FoodIntakeResultDto getFoodIntakeRings() {
-            long userId = SecurityUtils.getCurrentUserId();
-            return foodIntakeService.calculateFoodIntake(userId);
-        }
-    }
+   
 
     @GetMapping("/user_info")
     public ResponseEntity<UserInfoResponse> getUserInfo() {
@@ -205,5 +191,6 @@ public class StaticInfoController {
                                 .body(null);
         }
     }
-        
+
+
 }

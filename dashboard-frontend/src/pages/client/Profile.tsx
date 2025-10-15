@@ -46,6 +46,7 @@ const Profile: React.FC = () => {
       .get<Profile>("/static/user_info")
       .then((res) => {
         if (!mounted.current) return;
+        console.log("Loaded profile:", res);
         setProfile(res.data);
         reset(res.data); 
       })

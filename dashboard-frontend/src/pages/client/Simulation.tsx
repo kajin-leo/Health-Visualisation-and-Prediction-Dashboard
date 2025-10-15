@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import HeatmapChart from "../../components/DashboardCardContent/HealthStatusHeatmap/HealthStatus";
-import SimulateActivity from "../../components/Simulation/SimulateActivity";
+import HeatmapChart from "../../components/Simulation/HealthStatusHeatmap/HealthStatus";
+import SimulateActivity from "../../components/Simulation/SimulateActivity/SimulateActivity";
+import HealthStatusHeatmap from "../../components/Simulation/HealthStatusHeatmap/HealthStatusHeatmap";
 
 const SimulationView = () => {
     const [group, setGroup] = useState<"weekdays" | "weekends">("weekdays");
@@ -40,10 +41,7 @@ const SimulationView = () => {
                     <h1 className="opacity-100 rounded-lg text-gray-800 pl-1 text-lg tracking-tight font-bold font-[Nunito]">
                         Heatmap
                     </h1>
-                    <div className="grid grid-cols-2 h-[210px] w-full gap-2">
-                        <HeatmapChart group={group} activityType="mvpa" />
-                        <HeatmapChart group={group} activityType="light" />
-                    </div>
+                    <HealthStatusHeatmap isWeekend={group === "weekends"} />
                 </div>
             </div>
 

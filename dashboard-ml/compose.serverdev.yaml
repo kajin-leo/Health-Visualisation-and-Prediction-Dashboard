@@ -11,6 +11,12 @@ services:
     volumes:
       - ./serving:/app/serving
       - ./checkpoints:/app/checkpoints
+    environment:
+      - ML_RABBITMQ_HOST=rabbitmq
+      - ML_RABBITMQ_PORT=5672
+      - ML_RABBITMQ_USERNAME=cs79dashboard
+      - ML_RABBITMQ_PASSWORD=interactivedashboard_cs79-1
+      - ML_RABBITMQ_DEFAULT_VHOST=cs79-health
     working_dir: /app/serving 
     deploy:
       resources:
@@ -29,7 +35,7 @@ services:
     networks:
       - cs79-network
     restart: unless-stopped
-    command: ["gunicorn", "-b", "0.0.0.0:5000", "app:app"]
+    command: ["gunicorn", "-b", "0.0.0.0:5000", "--chdir", "/app/serving", "app:app"]
     extra_hosts:
       - "host.docker.internal:host-gateway"
 

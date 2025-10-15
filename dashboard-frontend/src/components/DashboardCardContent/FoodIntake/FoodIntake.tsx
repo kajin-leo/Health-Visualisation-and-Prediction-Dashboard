@@ -168,7 +168,8 @@ const FoodIntake: React.FC = () => {
   useEffect(() => {
     async function fetchData() {
       try {
-        const response = await apiClient.get("food-intake/rings");
+        const response = await apiClient.get("/food-intake/rings");
+        console.log("food-intake/rings response:", response);
         const data = response.data as FoodIntakeResultDto;
         setData({
           energy: data.energy,

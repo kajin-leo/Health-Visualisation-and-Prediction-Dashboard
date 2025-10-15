@@ -9,6 +9,18 @@ export const userAPI = {
   getHeatMapData: async () => {
     const response = await apiClient.get('/simulation/heatmap');
     return response.data;
+  },
+  
+  uploadAvatar: async (userId: number, file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await apiClient.post(`/avatar/${userId}`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data;
   }
   
 };

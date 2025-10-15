@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@heroui/react": "^2.8.2",
+    "@microsoft/fetch-event-source": "^2.0.1",
     "@nivo/core": "^0.99.0",
     "@nivo/heatmap": "^0.99.0",
     "@tailwindcss/vite": "^4.1.12",

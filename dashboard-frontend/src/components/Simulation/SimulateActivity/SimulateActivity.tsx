@@ -3,7 +3,9 @@ import SimulateActivityChart from "./SimulateActivityChart";
 import { type ReviewData } from "./HealthReview";
 import HealthReview from "./HealthReview";
 import { Button, Spinner } from "@heroui/react";
-import { apiClient } from "../../service/axios";
+import { apiClient } from "../../../service/axios";
+import { API_CONFIG } from "../../../config/api";
+import { fetchEventSource } from '@microsoft/fetch-event-source'
 
 type ActivityData = {
     description: string[];
@@ -28,7 +30,7 @@ const SimulateActivity = ({ MockData, isWeekend }: { MockData?: ActivityData, is
             });
             const groundtruthResponse = await apiClient.get('/simulation/groundtruth');
             setChartData(chartResponse.data);
-            setPredictionData({ groundTruth: groundtruthResponse.data });
+            setPredictionData({ groundTruth: groundtruthResponse.data, isLoading: false });
             setIsDataReady(true);
         } catch (error) {
             console.error(error);
@@ -38,7 +40,7 @@ const SimulateActivity = ({ MockData, isWeekend }: { MockData?: ActivityData, is
     useEffect(() => {
         if (MockData) {
             setChartData(MockData);
-            setPredictionData({ groundTruth: "NI" });
+            setPredictionData({ groundTruth: "NI", isLoading: false });
             setIsDataReady(true);
         } else {
             fetchData();
@@ -53,19 +55,68 @@ const SimulateActivity = ({ MockData, isWeekend }: { MockData?: ActivityData, is
                 prediction: {
                     newClassification: "HFZ",
                     possibility: 80
-                }
+                },
+                isLoading: false
             });
         } else {
             if (!chartData) return;
             if (!canSimulate) return;
             try {
                 setIsSimulating(true);
+                setPredictionData(prev => {return ({
+                    ...prev!,
+                    prediction: undefined,
+                    isLoading: true
+                })});
                 const response = await apiClient.post("/simulation/predict", {
                     isWeekend: isWeekend ?? false,
                     mvpa: chartData.mvpa,
                     light: chartData.light
                 });
-                setPredictionData(prev => {
+
+                const taskId = response.data;
+                const token = localStorage.getItem('token');
+                const eventSource = API_CONFIG.FULL_URL + '/simulation/stream/' + taskId;
+
+                await fetchEventSource(eventSource, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+
+                    onmessage: (msg) => {
+                        if (msg.event == 'result') {
+                            const result = JSON.parse(msg.data);
+                            setPredictionData(prev => {
+                                return {
+                                    ...prev!,
+                                    prediction: {
+                                        newClassification: result.classification,
+                                        possibility: result.probability
+                                    },
+                                    isLoading: false
+                                }
+                            });
+                        }
+                    },
+
+                    onerror: (err) => {
+                        console.error(err)
+                        setPredictionData(prev => {
+                            return {
+                                ...prev!,
+                                prediction: {
+                                    newClassification: '-',
+                                    possibility: 0
+                                },
+                                isLoading: false
+                            }
+                        });
+                        throw err;
+                    }
+
+                });
+
+                /* setPredictionData(prev => {
                     return {
                         ...prev!,
                         prediction: {
@@ -73,7 +124,7 @@ const SimulateActivity = ({ MockData, isWeekend }: { MockData?: ActivityData, is
                             possibility: response.data.probability
                         }
                     }
-                });
+                }); */
             } catch (error) {
                 console.error(error);
             }
@@ -85,7 +136,7 @@ const SimulateActivity = ({ MockData, isWeekend }: { MockData?: ActivityData, is
     const resetSimulation = () => {
         if (MockData) {
             setChartData(MockData);
-            setPredictionData({ groundTruth: "NI" });
+            setPredictionData({ groundTruth: "NI", isLoading: false });
         } else {
             setIsDataReady(false);
             fetchData();

@@ -4,7 +4,7 @@ FROM python:3.8-slim
 RUN pip install torch==2.2.2 -f https://download.pytorch.org/whl/cpu/torch_stable.html
 
 # 安装项目运行需要的依赖
-RUN pip install flask gunicorn numpy pandas scikit-learn tqdm sqlalchemy psycopg2-binary Flask-Cors
+RUN pip install flask gunicorn numpy pandas scikit-learn tqdm sqlalchemy psycopg2-binary Flask-Cors pika
 
 # 如果要 tensorboard 可视化
 # RUN pip install tensorboard

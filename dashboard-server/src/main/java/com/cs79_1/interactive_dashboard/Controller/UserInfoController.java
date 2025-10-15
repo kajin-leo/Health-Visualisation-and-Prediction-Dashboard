@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Security;
 import java.util.Optional;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/user/")
@@ -47,4 +49,19 @@ public class UserInfoController {
             return ResponseEntity.internalServerError().build();
         }
     }
+    @GetMapping("/avatar")
+    public ResponseEntity<Map<String, Object>> getAvatar() {
+        Long userId = SecurityUtils.getCurrentUserId();
+        try {
+            User user = userService.getUserByUserId(userId).orElseThrow();
+            Map<String, Object> response = new HashMap<>();
+            response.put("id", user.getId());
+            response.put("avatarUrl", user.getAvatarUrl());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("Error fetching avatar for user {}", userId, e);
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
 }

@@ -36,7 +36,7 @@ server:
   tomcat:
     max-swallow-size: 100MB
     max-http-form-post-size: 100MB
-    max-part-count: 1000
+    max-part-count: 2000
 
 jwt:
   secret: ${JWT_SECRET:1nteractive-dashb0ard-s1mulating-phys1cal-activ1ty-changes-and-predicting-health-0utcomes}

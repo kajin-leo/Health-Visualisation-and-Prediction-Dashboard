@@ -23,4 +23,6 @@ public interface WeeklyIntakeRepository extends JpaRepository<WeeklyIntake, Long
 
     @Query("SELECT w.limitedBeveragesAvgDaily FROM WeeklyIntake w WHERE w.user.id = :userId")
     Optional<Double> findLimitedBeveragesByUserId(long userId);
+
+    public WeeklyIntake findByUserId(long userId);
 }

@@ -21,7 +21,9 @@ public class User {
     private String firstName;
     private String lastName;
 
-//    @Column(nullable = false)
+    private String avatarUrl;
+
+    //    @Column(nullable = false)
     private double ageMonth;
 
 //    @Column(nullable = false)
@@ -163,6 +165,10 @@ public class User {
     public MentalHealthAndDailyRoutine getMentalHealthAndDailyRoutine() {
         return mentalHealthAndDailyRoutine;
     }
+
+    public String getAvatarUrl() { return avatarUrl;}
+
+    public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl;}
 
     public void setMentalHealthAndDailyRoutine(MentalHealthAndDailyRoutine mentalHealthAndDailyRoutine) {
         this.mentalHealthAndDailyRoutine = mentalHealthAndDailyRoutine;
