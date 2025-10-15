@@ -21,6 +21,10 @@ export const userAPI = {
       },
     });
     return response.data;
+  },
+  getAvatar: async () => {
+    const response = await apiClient.get('/user/avatar');
+    return response.data;
   }
   
 };

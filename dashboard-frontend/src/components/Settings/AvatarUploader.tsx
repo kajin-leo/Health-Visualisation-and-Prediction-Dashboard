@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import defaultAvatar from "./1.png"; 
+import defaultAvatar from "../../assets/1.png"; 
 
 const AvatarUploader = ({ currentAvatar, onFileSelect }) => {
   const [preview, setPreview] = useState(currentAvatar || null);

@@ -12,6 +12,8 @@ import { UserProvider } from './context/UserContext'
 import { useUser } from './context/UserContext'
 import { CircularProgress } from '@heroui/react'
 import Profile from './pages/client/Profile'
+import { Settings } from 'lucide-react'
+import Setting from './pages/setting/Setting'
 
 function ClientLayout({ children }) {
     const { loading, error } = useUser();
@@ -106,6 +108,14 @@ function App() {
                     <AuthLayout>
                         <Unauthorized />
                     </AuthLayout>
+                } />
+
+                <Route path="/settings" element={
+                    <ProtectedRoute requiredRole={['USER']}>
+                        <ClientLayout>
+                            <Setting />
+                        </ClientLayout>
+                    </ProtectedRoute>
                 } />
             </Routes>
         </UserProvider>
