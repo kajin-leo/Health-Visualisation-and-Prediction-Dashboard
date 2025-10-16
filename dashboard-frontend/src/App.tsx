@@ -12,6 +12,7 @@ import { UserProvider } from './context/UserContext'
 import { useUser } from './context/UserContext'
 import { CircularProgress } from '@heroui/react'
 import Profile from './pages/client/Profile'
+import GetHelp from './pages/client/GetHelp'
 
 function ClientLayout({ children }) {
     const { loading, error } = useUser();
@@ -81,6 +82,22 @@ function App() {
                     <ProtectedRoute requiredRole={['USER']}>
                         <ClientLayout>
                             <Profile />
+                        </ClientLayout>
+                    </ProtectedRoute>
+                } />
+
+                                <Route path="/profile" element={
+                    <ProtectedRoute requiredRole={['USER']}>
+                        <ClientLayout>
+                            <Profile />
+                        </ClientLayout>
+                    </ProtectedRoute>
+                    
+                } />
+                                <Route path="/get-help" element={
+                    <ProtectedRoute requiredRole={['USER']}>
+                        <ClientLayout>
+                            <GetHelp />
                         </ClientLayout>
                     </ProtectedRoute>
                 } />
