@@ -4,6 +4,7 @@ import com.cs79_1.interactive_dashboard.DTO.BodyMetricsSummaryDTO;
 import com.cs79_1.interactive_dashboard.Entity.BodyMetrics;
 import com.cs79_1.interactive_dashboard.Entity.User;
 import com.cs79_1.interactive_dashboard.Entity.BodyComposition;
+import com.cs79_1.interactive_dashboard.Entity.UserPreference;
 import com.cs79_1.interactive_dashboard.Enum.HFZClassification;
 import com.cs79_1.interactive_dashboard.Repository.BodyMetricsRepository;
 import com.cs79_1.interactive_dashboard.Repository.BodyCompositionRepository;
@@ -304,8 +305,11 @@ public class StaticInfoService {
         }
 
     }
+
     public UserInfoResponse getUserInfo(long userId) {
             Optional<User> userOptional = userService.getUserByUserId(userId);
+            UserPreference userPreference = userService.getOrCreateUserPreference(userId);
+
             if(userOptional.isPresent()){
                 User user = userOptional.get();
 
@@ -315,7 +319,8 @@ public class StaticInfoService {
                     user.getLastName(), 
                     user.getAgeYear(), 
                     user.getSex(),
-                    user.getId()
+                    user.getId(),
+                    userPreference.getAppearance().name()
                 );
 
                 return dto;
@@ -349,6 +354,7 @@ public class StaticInfoService {
         }
 
         userService.saveUser(user);
+        UserPreference userPreference = userService.getOrCreateUserPreference(userId);
 
         return new UserInfoResponse(
                 user.getUsername(),
@@ -356,7 +362,8 @@ public class StaticInfoService {
                 user.getLastName(),
                 user.getAgeYear(),
                 user.getSex(),
-                user.getId()
+                user.getId(),
+                userPreference.getAppearance().name()
         );
     }
 }

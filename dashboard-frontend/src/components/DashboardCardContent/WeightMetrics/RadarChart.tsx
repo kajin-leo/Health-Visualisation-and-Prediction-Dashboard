@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useMemo } from 'react';
+import React, { useEffect, useRef, useMemo, useState } from 'react';
 import {
     Chart as ChartJS,
     RadialLinearScale,
@@ -52,6 +52,7 @@ const RadarChart: React.FC<RadarChartProps> = ({
     const normalizeValue = (value: number) => {
         return (value - valueRange.min) / (valueRange.max - valueRange.min);
     };
+    const [chartColor, setChartColor] = useState({text:'', line: ''});
 
     const getColorFromValue = (normalizedValue: number, alpha: number = 1, isBorder = false) => {
         normalizedValue = Math.max(0, Math.min(1, normalizedValue));
@@ -123,6 +124,26 @@ const RadarChart: React.FC<RadarChartProps> = ({
         else return getColorFromValue(normalizedAvg, 0.5);
     };
 
+    useEffect(()=>{
+        const updateChartColors = () => {
+            const styles = getComputedStyle(document.documentElement);
+            setChartColor({
+                text: `hsl(${styles.getPropertyValue("--heroui-chartText")})` || "#d9d9d9ff",
+                line: `hsl(${styles.getPropertyValue("--heroui-chartLine")})` || "#d9d9d9ff"
+            });
+        }
+
+        updateChartColors();
+
+        const observer = new MutationObserver(updateChartColors);
+        observer.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ['class']
+        });
+
+        return () => observer.disconnect();
+    }, []);
+
     const chartData: ChartData<'radar'> = {
         labels,
         datasets: [
@@ -158,7 +179,10 @@ const RadarChart: React.FC<RadarChartProps> = ({
         aspectRatio: 1,
         plugins: {
             legend: {
-                display: false
+                display: false,
+                labels: {
+                    color: chartColor.text
+                }
             },
             tooltip: {
                 enabled: true,
@@ -174,11 +198,14 @@ const RadarChart: React.FC<RadarChartProps> = ({
         scales: {
             r: {
                 beginAtZero: false,
+                pointLabels: {
+                    color: chartColor.text,
+                },
                 grid: {
-                    color: 'rgba(0, 0, 0, 0.1)',
+                    color: chartColor.line,
                 },
                 angleLines: {
-                    color: 'rgba(0, 0, 0, 0.1)',
+                    color: chartColor.line,
                 },
                 ticks: {
                     backdropColor: 'transparent',

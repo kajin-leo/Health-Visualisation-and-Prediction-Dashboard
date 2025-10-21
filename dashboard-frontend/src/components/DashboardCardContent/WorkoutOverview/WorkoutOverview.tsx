@@ -13,6 +13,27 @@ type Workout = {
 const WorkoutOverviewChart = ({ data, showTooltips, className }: { data: Workout[], showTooltips?: boolean, className?: string }) => {
     const chartRef = useRef<HTMLCanvasElement>(null);
     const chartInstance = useRef<Chart | null>(null);
+    const [chartColor, setChartColor] = useState({text:'', line: ''});
+
+    useEffect(()=>{
+            const updateChartColors = () => {
+                const styles = getComputedStyle(document.documentElement);
+                setChartColor({
+                    text: `hsl(${styles.getPropertyValue("--heroui-chartText")})` || "#d9d9d9ff",
+                    line: `hsl(${styles.getPropertyValue("--heroui-chartLine")})` || "#d9d9d9ff"
+                });
+            }
+    
+            updateChartColors();
+    
+            const observer = new MutationObserver(updateChartColors);
+            observer.observe(document.documentElement, {
+                attributes: true,
+                attributeFilter: ['class']
+            });
+    
+            return () => observer.disconnect();
+        }, []);
 
     useEffect(() => {
         if (!chartRef.current) return;
@@ -54,6 +75,9 @@ const WorkoutOverviewChart = ({ data, showTooltips, className }: { data: Workout
                 plugins: {
                     legend: {
                         position: 'top',
+                        labels: {
+                            color: chartColor.text
+                        }
                     },
                     title: {
                         display: false,
@@ -67,7 +91,25 @@ const WorkoutOverviewChart = ({ data, showTooltips, className }: { data: Workout
                 scales: {
                     y: {
                         beginAtZero: true,
+                        ticks: {
+                            color: chartColor.text
+                        },
+                        grid: {
+                            color: chartColor.line
+                        }
+                    },
+                    x: {
+                        pointLabels: {
+                            color: chartColor.text
+                        },
+                        grid: {
+                            color: chartColor.line
+                        },
+                        ticks: {
+                            color: chartColor.text
+                        }
                     }
+                    
                 }
             }
         } as any);
@@ -77,7 +119,7 @@ const WorkoutOverviewChart = ({ data, showTooltips, className }: { data: Workout
                 chartInstance.current.destroy();
             }
         };
-    }, [data]);
+    }, [data, chartColor]);
 
     return (
         <div className={`w-full h-full relative ${className || ''}`}>

@@ -21,7 +21,7 @@ export default function WlgrWlgxCards() {
   return (
     <div className="w-full h-full grid grid-rows-2 grid-cols-2 gap-5">
       {TITLES.map(({ key, label }) => (
-        <div key={key} className="relative flex flex-col items-center justify-center bg-gradient-to-b from-white to-gray-100 rounded-xl outline-1 outline-white/30 shadow-xl">
+        <div key={key} className="relative flex flex-col items-center justify-center bg-gradient-to-b from-white dark:from-gray-900 to-gray-100 dark:to-gray-950 rounded-xl outline-1 outline-white/30 dark:outline-gray-800/90 shadow-xl">
           <div className="absolute w-full h-full p-2">
             {['top-2 left-2',
               'top-2 right-2',

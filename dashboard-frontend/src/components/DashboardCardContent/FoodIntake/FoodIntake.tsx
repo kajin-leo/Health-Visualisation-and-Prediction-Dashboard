@@ -120,7 +120,7 @@ const FoodIntakeRings: React.FC<FoodIntakeResultDto> = (data) => {
 
   return (
     <div className='flex flex-col w-full h-full'>
-      <h1 className="w-fit opacity-100 rounded-lg text-gray-800 pl-1 text-lg tracking-tight font-bold font-[Nunito] min-h-10 flex-shrink-0">
+      <h1 className="w-fit opacity-100 rounded-lg text-gray-800 dark:text-gray-200 select-none pl-1 text-lg tracking-tight font-bold font-[Nunito] min-h-10 flex-shrink-0">
         Dietary Intake
       </h1>
       <div className="h-full w-full flex gap-0 items-center justify-between flex-1 p-2">
@@ -138,7 +138,7 @@ const FoodIntakeRings: React.FC<FoodIntakeResultDto> = (data) => {
               />
             ))}
           </svg> */}
-          <Doughnut data={chartData} options={chartOptions} />
+          <Doughnut data={chartData} options={chartOptions} className="dark:brightness-70 dark:saturate-120 dark:contrast-150"/>
         </div>
 
         {/* Legend */}
@@ -147,7 +147,7 @@ const FoodIntakeRings: React.FC<FoodIntakeResultDto> = (data) => {
             <div key={label} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 {/* <span title="Recommended (track)" style={{ width: 12, height: 12, background: ringColors[idx].recommended, display: "inline-block", borderRadius: 2 }} /> */}
-                <span title="Actual (arc)" className="rounded-full border-1 border-black/20 shadow-md w-5 h-3" style={{ background: ringColors[idx].actual, display: "inline-block" }} />
+                <span title="Actual (arc)" className="rounded-full border-1 border-black/20 shadow-md w-5 h-3 dark:brightness-70 dark:saturate-120 dark:contrast-150" style={{ background: ringColors[idx].actual, display: "inline-block" }} />
               </div>
               <div className="flex flex-col">
                 <h1 className="text-md font-semibold">{label}</h1>

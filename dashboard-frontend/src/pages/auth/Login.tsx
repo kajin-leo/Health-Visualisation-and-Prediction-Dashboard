@@ -4,6 +4,7 @@ import { authClient } from '../../service/axios';
 import { Alert, Button, Input } from '@heroui/react';
 import { CircleX, XCircle } from 'lucide-react';
 import Logo from '../../assets/豹豹Logo.svg';
+import LogoDark from '../../assets/豹豹Logo-Dark.svg';
 import { useUser } from '../../context/UserContext';
 
 const Login = () => {
@@ -50,15 +51,20 @@ const Login = () => {
             setIsLoading(false);
         }
     }
+
+    const lightColorScheme = "bg-white/80 outline-white/20"
+    const darkColorScheme = "dark:bg-black/50 dark:outline-gray-100/20"
+
     return (
         <form
         onSubmit={(e)=>{
             e.preventDefault();
             handleLogin();
         }}>
-            <div className="bg-white/80 backdrop-blur-xl outline-1 outline-white/20 flex flex-col items-center gap-4 rounded-3xl p-4 min-w-80 shadow-xl select-none">
+            <div className={`${lightColorScheme} ${darkColorScheme} backdrop-blur-xl outline-1  flex flex-col items-center gap-4 rounded-3xl p-4 min-w-80 shadow-xl select-none`}>
             <div className='flex flex-col items-center my-2'>
-                <img src={Logo} className='w-15' />
+                <img src={Logo} className='w-15 block dark:hidden' />
+                <img src={LogoDark} className='w-15 hidden dark:block' />
                 <h1 className='text-2xl font-semibold'>Login</h1>
             </div>
             <Input label='Username'

@@ -112,6 +112,28 @@ export default function HeatmapChart({ weekend, activityType, rawdata }: { weeke
   const [payload, setPayload] = useState<any>(null);
   const [isDataReady, setIsDataReady] = useState(false);
 
+  const [chartColor, setChartColor] = useState({ text: '', line: '' });
+
+    useEffect(() => {
+        const updateChartColors = () => {
+            const styles = getComputedStyle(document.documentElement);
+            setChartColor({
+                text: `hsl(${styles.getPropertyValue("--heroui-chartText")})` || "#d9d9d9ff",
+                line: `hsl(${styles.getPropertyValue("--heroui-chartLine")})` || "#d9d9d9ff"
+            });
+        }
+
+        updateChartColors();
+
+        const observer = new MutationObserver(updateChartColors);
+        observer.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ['class']
+        });
+
+        return () => observer.disconnect();
+    }, []);
+
   const setChartData = async (data) => {
     const isWeekend = (wd: number) => wd >= 5;
     const filterByGroup = (arr: ImpactItem[]) =>
@@ -180,14 +202,17 @@ export default function HeatmapChart({ weekend, activityType, rawdata }: { weeke
             ticks: {
               stepSize: 1,
               callback: (v: any) => `${v}:00`,
+              color: chartColor.text
             },
             title: { display: true, text: "Hour of Day" },
             offset: true,
             grid: {
               display: false,
+              color: chartColor.line
             },
             border: {
               display: false,
+              color: chartColor.line
             },
           },
           y: {
@@ -196,10 +221,15 @@ export default function HeatmapChart({ weekend, activityType, rawdata }: { weeke
             title: { display: true, text: "Seconds (bins of 600s)" },
             grid: {
               display: false,
+              color: chartColor.line
             },
             border: {
               display: false,
+              color: chartColor.line
             },
+            ticks: {
+              color: chartColor.text
+            }
           },
         },
         plugins: {

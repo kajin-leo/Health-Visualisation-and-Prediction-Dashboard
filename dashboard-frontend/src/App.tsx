@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useContext } from 'react'
 import { Routes, Route, useNavigate } from 'react-router-dom'
 import ProtectedRoute from './config/ProtectedRoute'
 import SideBar from './components/Sidebar'
@@ -17,10 +17,12 @@ import Setting from './pages/setting/Setting'
 
 function ClientLayout({ children }) {
     const { loading, error } = useUser();
+    const userLightColorScheme = "from-blue-100 via-40% via-violet-50 to-blue-100 brightness-90 saturate-200";
+    const userDarkColorScheme = "dark:from-indigo-800 dark:via-fuchsia-200 dark:to-indigo-800 dark:brightness-80 dark:saturate-150"
 
     if (loading) {
         return (
-            <div className="fixed w-full h-full bg-conic from-blue-100 via-40% via-violet-50 to-blue-100 blur-2xl brightness-90 saturate-200 flex items-center py-2">
+            <div className={`fixed w-full h-full bg-conic ${userLightColorScheme} ${userDarkColorScheme} blur-2xl flex items-center py-2`}>
                 <div className='w-full h-full bg-white/20 backdrop-blur-3xl flex items-center justify-center'>
                     <div>
                         <CircularProgress label="Loading..." />
@@ -32,11 +34,11 @@ function ClientLayout({ children }) {
 
     return (
         <div className="fixed w-full h-screen min-h-[650px] flex">
-            <div className='absolute -z-100 w-full h-full bg-conic from-blue-100 via-40% via-violet-50 to-blue-100 blur-2xl brightness-90 saturate-200' />
+            <div className={`absolute -z-100 w-full h-full bg-conic ${userLightColorScheme} ${userDarkColorScheme} blur-2xl`} />
             <div className='w-[250px] m-4 mr-2 flex-shrink-0'>
                 <SideBar className='w-full' />
             </div>
-            <div id='dashboard' className='flex-1 overflow-visible'>
+            <div id='dashboard' className='w-full overflow-visible'>
                     {children}
             </div>
         </div>
@@ -52,8 +54,11 @@ function OpsLayout({ children }) {
 }
 
 function AuthLayout({ children }) {
+    const authLightColorScheme = "from-pink-50 to-cyan-100"
+    const authDarkColorScheme = "dark:from-pink-800/50 dark:to-cyan-800"
+
     return (
-        <div className='fixed w-full h-full bg-gradient-to-br from-pink-50 to-cyan-100 flex justify-center items-center p-2'>
+        <div className={`fixed w-full h-full bg-gradient-to-br ${authLightColorScheme} ${authDarkColorScheme} flex justify-center items-center p-2`}>
             {children}
         </div>
     )

@@ -6,6 +6,28 @@ const WorkoutDailyDetailsChart = ({data, showTooltips} : {data: DailyDetail[], s
     const chartRef = useRef<HTMLCanvasElement>(null);
     const chartInstance = useRef<Chart | null>(null);
 
+    const [chartColor, setChartColor] = useState({text:'', line: ''});
+
+    useEffect(()=>{
+            const updateChartColors = () => {
+                const styles = getComputedStyle(document.documentElement);
+                setChartColor({
+                    text: `hsl(${styles.getPropertyValue("--heroui-chartText")})` || "#d9d9d9ff",
+                    line: `hsl(${styles.getPropertyValue("--heroui-chartLine")})` || "#d9d9d9ff"
+                });
+            }
+    
+            updateChartColors();
+    
+            const observer = new MutationObserver(updateChartColors);
+            observer.observe(document.documentElement, {
+                attributes: true,
+                attributeFilter: ['class']
+            });
+    
+            return () => observer.disconnect();
+        }, []);
+
     useEffect(() => {
         if (!chartRef.current) return;
 
@@ -45,6 +67,9 @@ const WorkoutDailyDetailsChart = ({data, showTooltips} : {data: DailyDetail[], s
                 plugins: {
                     legend: {
                         position: 'top',
+                        labels: {
+                            color: chartColor.text
+                        }
                     },
                     title: {
                         display: false,
@@ -58,6 +83,20 @@ const WorkoutDailyDetailsChart = ({data, showTooltips} : {data: DailyDetail[], s
                 scales: {
                     y: {
                         beginAtZero: true,
+                        ticks: {
+                            color: chartColor.text
+                        },
+                        grid: {
+                            color: chartColor.line
+                        }
+                    }, 
+                    x: {
+                        grid: {
+                            color: chartColor.line
+                        },
+                        ticks: {
+                            color: chartColor.text
+                        }
                     }
                 }
             }
@@ -68,7 +107,7 @@ const WorkoutDailyDetailsChart = ({data, showTooltips} : {data: DailyDetail[], s
                 chartInstance.current.destroy();
             }
         };
-    }, [data]);
+    }, [data, chartColor]);
 
     return (
         <div className="w-full h-full relative min-h-100">
