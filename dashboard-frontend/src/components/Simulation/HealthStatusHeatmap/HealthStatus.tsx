@@ -182,8 +182,9 @@ export default function HeatmapChart({ weekend, activityType, rawdata }: { weeke
           data: convertHeatmapData(payload!.value, payload!.score),
           backgroundColor: cellBg,
           borderWidth: 1,
-          width: 20,
-          height: 20,
+          borderColor: chartColor.line,
+          width:  ({ chart }) => (chart.chartArea || {}).width / 24,
+          height: ({ chart }) => (chart.scales.y.height / 5)
         },
       ],
     };
@@ -194,6 +195,9 @@ export default function HeatmapChart({ weekend, activityType, rawdata }: { weeke
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        layout: {
+          padding: 0
+        },
         scales: {
           x: {
             type: "linear" as const,
@@ -204,11 +208,15 @@ export default function HeatmapChart({ weekend, activityType, rawdata }: { weeke
               callback: (v: any) => `${v}:00`,
               color: chartColor.text
             },
-            title: { display: true, text: "Hour of Day" },
+            title: { 
+              display: true, 
+              text: "Hour of Day",
+              color: chartColor.text
+            },
             offset: true,
             grid: {
               display: false,
-              color: chartColor.line
+              color: chartColor.line,
             },
             border: {
               display: false,
@@ -218,9 +226,16 @@ export default function HeatmapChart({ weekend, activityType, rawdata }: { weeke
           y: {
             type: "category" as const,
             labels: BIN_ORDER,
-            title: { display: true, text: "Seconds (bins of 600s)" },
+            offset: false,
+            title: { 
+              display: true, 
+              text: "Seconds (bins of 600s)" ,
+              color: chartColor.text,
+              padding: { top: 0, bottom: 0 }
+            },
             grid: {
               display: false,
+              offset: false,
               color: chartColor.line
             },
             border: {
@@ -266,7 +281,7 @@ export default function HeatmapChart({ weekend, activityType, rawdata }: { weeke
           </h2>
         </div>
 
-        <div style={{ width: "90%", height: 180 }}>
+        <div style={{ width: "90%", height: 180 }} className="dark:brightness-80 dark:contrast-125 dark:saturate-120">
           <canvas ref={chartRef} />
         </div>
     </div>
