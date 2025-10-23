@@ -59,12 +59,12 @@ const GetHelp: React.FC = () => {
 
   return (
     <div className="p-8">
-      <h1 className="text-2xl font-semibold mb-2">Get Help</h1>
+      <h1 className="text-2xl font-semibold mb-2 text-slate-800 dark:text-slate-200">Get Help</h1>
       <input
         value={q}
         onChange={(e)=>setQ(e.target.value)}
         placeholder="Search: dashboard / activity / profile / faq..."
-        className="w-full rounded-xl border border-slate-200 px-4 py-3 mb-6"
+        className="w-full rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 px-4 py-3 mb-6 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors"
       />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {filtered.map(s => (
