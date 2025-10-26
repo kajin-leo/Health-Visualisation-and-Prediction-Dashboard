@@ -12,9 +12,10 @@ import { UserProvider } from './context/UserContext'
 import { useUser } from './context/UserContext'
 import { CircularProgress } from '@heroui/react'
 import Profile from './pages/client/Profile'
-import { Settings } from 'lucide-react'
-import Setting from './pages/setting/Setting'
+// import { Settings } from 'lucide-react'
+// import Setting from './pages/setting/Setting'
 import Register from './pages/auth/Register'
+import Survey from './pages/client/Survey'
 
 function ClientLayout({ children }) {
     const { loading, error } = useUser();
@@ -82,6 +83,12 @@ function App() {
                 <Route path='/simulate' element={
                     <ClientLayout>
                         <Simulation />
+                    </ClientLayout>
+                } />
+                
+                <Route path='/survey' element={
+                    <ClientLayout>
+                        <Survey />
                     </ClientLayout>
                 } />
 

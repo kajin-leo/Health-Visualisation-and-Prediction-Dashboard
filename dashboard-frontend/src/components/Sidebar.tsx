@@ -21,6 +21,11 @@ const sidebarData = {
             title: 'Simulate',
             icon: FlaskConical,
             url: '/simulate'
+        },
+        {
+            title: 'Survey',
+            icon: ChartLine,
+            url: '/survey'
         }
     ],
     navBottoms: [
