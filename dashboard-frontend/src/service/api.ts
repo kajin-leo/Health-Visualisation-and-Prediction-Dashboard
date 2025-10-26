@@ -14,6 +14,10 @@ export const userAPI = {
     return response.data;
   },
 
+  getUserInfo: async () => {
+    const response = await apiClient.get('/user/info');
+    return response.data;
+  },
   // Simulation
 
   getHeatMapData: async () => {

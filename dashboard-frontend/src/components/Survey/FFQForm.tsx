@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import QuestionGroup from "./QuestionGroup";
+import { convertAnswersToServings } from "./ServingMapper";
+import {userAPI} from "../../service/api.ts"; 
 
 interface Question {
   id: string;
@@ -431,10 +433,34 @@ const FFQForm: React.FC = () => {
   const nextPage = () => setPage((p) => Math.min(p + 1, groups.length - 1));
   const prevPage = () => setPage((p) => Math.max(p - 1, 0));
 
-  const handleSubmit = () => {
-    console.log(" FFQ Answers:", answers);
-    alert("Survey submitted! ");
-  };
+// const handleSubmit = async () => {
+//   setLoading(true);
+//   try {
+    
+//     const userInfo = await userAPI.getUserInfo();
+//     const userId = userInfo.id; 
+
+//     const servingData = convertAnswersToServings(answers);
+//     const payload = {
+//       userId,
+//       foodFrequency: answers,
+//       servings: servingData,
+//     };
+
+//     await axios.post("http://localhost:5484/api/survey/ffq", payload, {
+//       headers: {
+//         Authorization: `Bearer ${localStorage.getItem("token")}`,
+//       },
+//     });
+
+//     setSubmitted(true); // ✅ 切换到 Thank You 界面
+//   } catch (err) {
+//     console.error("Submit failed:", err);
+//     alert("Something went wrong. Please try again.");
+//   } finally {
+//     setLoading(false);
+//   }
+// };
 
   return (
     <div>
