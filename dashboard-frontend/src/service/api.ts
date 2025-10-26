@@ -14,6 +14,10 @@ export const userAPI = {
     return response.data;
   },
 
+  getUserInfo: async () => {
+    const response = await apiClient.get('/user/info');
+    return response.data;
+  },
   // Simulation
 
   getHeatMapData: async () => {
@@ -40,6 +44,11 @@ export const userAPI = {
     return response.data;
   },
 
+//Survey
+  submitSurvey: async (data: any) => {
+    const response = await apiClient.post('/survey/ffq', data);
+    return response.data;
+  }
 
   
 };
