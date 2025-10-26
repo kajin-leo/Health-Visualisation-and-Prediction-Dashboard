@@ -44,6 +44,11 @@ export const userAPI = {
     return response.data;
   },
 
+//Survey
+  submitSurvey: async (data: any) => {
+    const response = await apiClient.post('/survey/ffq', data);
+    return response.data;
+  }
 
   
 };

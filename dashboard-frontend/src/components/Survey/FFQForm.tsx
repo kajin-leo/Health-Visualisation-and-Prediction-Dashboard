@@ -18,6 +18,8 @@ interface Group {
 const FFQForm: React.FC = () => {
   const [page, setPage] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
  
   const groups: Group[] = [
@@ -433,35 +435,36 @@ const FFQForm: React.FC = () => {
   const nextPage = () => setPage((p) => Math.min(p + 1, groups.length - 1));
   const prevPage = () => setPage((p) => Math.max(p - 1, 0));
 
-// const handleSubmit = async () => {
-//   setLoading(true);
-//   try {
+const handleSubmit = async () => {
+  setLoading(true);
+  try {
     
-//     const userInfo = await userAPI.getUserInfo();
-//     const userId = userInfo.id; 
+    const userInfo = await userAPI.getUserInfo();
+    const userId = userInfo.userId;
 
-//     const servingData = convertAnswersToServings(answers);
-//     const payload = {
-//       userId,
-//       foodFrequency: answers,
-//       servings: servingData,
-//     };
+    
+    const servingData = convertAnswersToServings(answers);
 
-//     await axios.post("http://localhost:5484/api/survey/ffq", payload, {
-//       headers: {
-//         Authorization: `Bearer ${localStorage.getItem("token")}`,
-//       },
-//     });
+    
+    const payload = {
+      userId,
+      foodFrequency: answers,
+      servings: servingData,
+    };
 
-//     setSubmitted(true); // ✅ 切换到 Thank You 界面
-//   } catch (err) {
-//     console.error("Submit failed:", err);
-//     alert("Something went wrong. Please try again.");
-//   } finally {
-//     setLoading(false);
-//   }
-// };
+    
+    const response = await userAPI.submitSurvey(payload);
 
+    console.log("Survey submitted:", response);
+    setSubmitted(true); 
+
+  } catch (err) {
+    console.error("Error submitting survey:", err);
+    alert("Something went wrong. Please try again.");
+  } finally {
+    setLoading(false);
+  }
+};
   return (
     <div>
       <QuestionGroup
