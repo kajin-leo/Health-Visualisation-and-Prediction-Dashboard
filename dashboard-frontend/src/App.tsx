@@ -16,6 +16,7 @@ import Profile from './pages/client/Profile'
 // import Setting from './pages/setting/Setting'
 import Register from './pages/auth/Register'
 import Survey from './pages/client/Survey'
+import Insights from './pages/client/Insights'
 
 function ClientLayout({ children }) {
     const { loading, error } = useUser();
@@ -89,6 +90,12 @@ function App() {
                 <Route path='/survey' element={
                     <ClientLayout>
                         <Survey />
+                    </ClientLayout>
+                } />
+
+                <Route path='/insights' element={
+                    <ClientLayout>
+                        <Insights />
                     </ClientLayout>
                 } />
 

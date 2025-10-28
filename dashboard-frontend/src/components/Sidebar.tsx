@@ -1,5 +1,5 @@
 import { Button, Listbox, ListboxItem, Popover, PopoverContent, PopoverTrigger, User } from '@heroui/react'
-import { Cog, Gauge, CircleQuestionMark, ChartLine, LogOut, SquareUser, BicepsFlexed, FlaskConical } from 'lucide-react'
+import { Cog, Gauge, CircleQuestionMark, ChartLine, LogOut, SquareUser, BicepsFlexed, FlaskConical, Lightbulb } from 'lucide-react'
 
 import SidebarMenuItem from './SidebarMenuItem'
 import { useState, useEffect, useRef } from 'react'
@@ -26,6 +26,11 @@ const sidebarData = {
             title: 'Survey',
             icon: ChartLine,
             url: '/survey'
+        },
+        {
+            title: 'Insights',
+            icon: Lightbulb,
+            url: '/insights'
         }
     ],
     navBottoms: [
