@@ -26,6 +26,28 @@ const GetHelp: React.FC = () => {
       where: "Dashboard",
     },
     {
+      id: "insights",
+      title: "Insights",
+      summary: "AI-powered health insights and personalized recommendations based on your data.",
+      details: [
+        "View personalized health recommendations",
+        "Track progress with AI-generated insights",
+        "Get alerts for important health trends",
+      ],
+      where: "Insights page",
+    },
+    {
+      id: "survey",
+      title: "Survey",
+      summary: "Complete health surveys to provide additional context for better insights.",
+      details: [
+        "Answer health and lifestyle questions",
+        "Help improve AI recommendations",
+        "Track your health journey progress",
+      ],
+      where: "Survey page",
+    },
+    {
       id: "profile",
       title: "Profile",
       summary: "Manage your account information and basic preferences.",
@@ -63,7 +85,7 @@ const GetHelp: React.FC = () => {
       <input
         value={q}
         onChange={(e)=>setQ(e.target.value)}
-        placeholder="Search: dashboard / activity / profile / faq..."
+        placeholder="Search: dashboard / activity / insights / survey / profile / faq..."
         className="w-full rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 px-4 py-3 mb-6 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors"
       />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
