@@ -36,3 +36,5 @@ build/
 
 ### Python Caching ###
 *.pyc
+
+*.env
