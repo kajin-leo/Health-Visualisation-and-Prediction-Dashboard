@@ -15,10 +15,8 @@ from rabbitmq_client import RabbitMQClient
 app = Flask(__name__)
 CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
 
-CHECKPOINT = r"../checkpoints/model_best.pth"     # ckpt路径
-# CSV_PATH   = r"dashboard-ml/SYNTH_000410.csv"  # 这次要预测的那份CSV
-# ATTR_CSV   = r"C:/Users/wshiy/Desktop/USDY/COMP5703/data/CS79_1/individual_attributes.csv"
-
+CHECKPOINT = r"../checkpoints/model_best.pth"     # ckpt path
+# CSV_PATH   = r"dashboard-ml/SYNTH_000410.csv"  # individule attributes csv
 
 CLASS_NAMES = ["HFZ", "NIHR", "NI", "VL"]
 NUM_CLASSES = len(CLASS_NAMES)
@@ -101,7 +99,7 @@ def _zero_out_model_grads():
 # === Business ===
 def generate_heatmap_data(userId):
     try:
-        df = load_timeseries_from_db(userId)      # 返回列正好是 f1,f2,f3
+        df = load_timeseries_from_db(userId)      # return column f1,f2,f3
         df["ts"] = pd.to_datetime(df["ts"], errors="coerce")
         age, is_female = load_attrs_from_db(userId)
     except Exception as e:
@@ -146,8 +144,8 @@ def generate_heatmap_data(userId):
     probs = torch.softmax(logits, dim=1).detach().cpu().numpy().flatten().tolist()
 
     with ATTN_LOCK:
-        _reset_collector()                       # 反传前清空上次残留
-        _zero_out_model_grads()                  # 确保没有历史梯度
+        _reset_collector()             
+        _zero_out_model_grads()                
 
         with torch.enable_grad(): 
             logits = model(x.requires_grad_(True), padding_masks=padding_mask, static_features=s_static)
@@ -265,7 +263,7 @@ def simulate_predict(data):
                 try:
                     h = int(k)
                     if 0 <= h <= 23:
-                        out[h] = float(v)  # v 为百分比，如 0.2 表示 +20%
+                        out[h] = float(v)
                 except Exception:
                     pass
         return out
@@ -287,14 +285,9 @@ def simulate_predict(data):
     CLIP_MIN, CLIP_MAX = 0.0, 3600.0
 
     def _apply_pct_by_hour(series: pd.Series, pct_map: dict):
-        """
-        对给定 series（如 f1=mvpa / f3=light）在每个小时段乘以 (pct)，
-        以实现“均值按百分比调整”的效果。
-        """
         s = series.copy().astype(float)
         for h, pct in pct_map.items():
             factor = float(pct)               # 0.2 => 1.2；-0.1 => 0.9
-            # 可选：限制 factor 下界，避免极端负值导致反号
             # factor = max(0.0, factor)
 
             mask = day_mask & (hours == int(h))
@@ -310,7 +303,7 @@ def simulate_predict(data):
     if light_pct:
         df["f3"] = _apply_pct_by_hour(df["f3"], light_pct)
 
-    # ===== 组特征并归一化 =====
+    # ===== normalization =====
     feat = df[["f1", "f2", "f3"]].copy()
     feat.columns = ["f1", "f2", "f3"]
     feat = normalizer.normalize(feat)
@@ -330,11 +323,11 @@ def simulate_predict(data):
         padding_mask[-(L - valid_len):] = False
     padding_mask = padding_mask.unsqueeze(0).to(device)
 
-    # ===== tensor & 静态 =====
+    # ===== tensor & static =====
     x = torch.from_numpy(feat.values.astype(np.float32)).unsqueeze(0).to(device)
     s_static = torch.tensor([[float(age), float(is_female)]], dtype=torch.float32).to(device)
 
-    # ===== 推理（仅概率）=====
+    # ===== inference(prob only) =====
     model.eval()
     with torch.inference_mode():
         logits = model(x, padding_masks=padding_mask, static_features=s_static)
