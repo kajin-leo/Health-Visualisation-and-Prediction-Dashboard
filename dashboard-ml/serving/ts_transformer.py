@@ -366,12 +366,12 @@ class TSTransformerEncoderClassiregressor(nn.Module):
         # add F.log_softmax and use NLLoss
         return output_layer
 
-    def forward(self, X, padding_masks, static_features=None):  # ### ADDED: 新增可选入参 static_features
+    def forward(self, X, padding_masks, static_features=None):  # ### ADDED: static_features
         """
         Args:
             X: (batch_size, seq_length, feat_dim) torch tensor of masked features (input)
             padding_masks: (batch_size, seq_length) boolean tensor, 1 means keep vector at this position, 0 means padding
-            static_features: (batch_size, S)  可选，S=static_features_dim（如 age+sex=2）
+            static_features: (batch_size, S)
         Returns:
             output: (batch_size, num_classes)
         """
