@@ -1,6 +1,12 @@
 # About This Project
 This is the Capstone Project of CS79-1, COMP5307, 2025S2. The project implements an Activity Intensity Simulate function, where users can drag on a chart to simulate the change of their Activity Intensity, and retrieve a predicted HFZ (Healthy Fitness Zone) classification marking the possible health condition following the activity pattern as daily routine, aiming at helping users develop an appropriate intensity of activities to keep health using intrinsic motivation. The project also visualises multiple types of health data, ranging from anthropometric measurements to bioelectrical impedance. 
 
+# Project Structure
+- The frontend SPA is developed using React + TypeScript, located in `/dashboard-frontend`. 
+- The backend is a Spring Boot server, located in `/dashboard-server`. 
+- The model service is located in `/dashboard-ml`, which applies our trained model on top of the MVTS structure. 
+- The iOS Demo App is located in `/dashboard-extract`. This is for extracting Apple HealthKit data from iPhone and export as JSON files so that you can upload your own data while registration. 
+
 # How to build
 The project implements Docker Compose. To fully boot up, you can run `docker compose up -d --build` at the root directory of the project. For the subsequent launching, the `--build` parameter is not required. 
 
@@ -12,7 +18,7 @@ Please be aware that the domains, which will be `WEB_FRONTEND_BASE` and `SERVER_
 >For localhost deployment, please make sure the ports of `WEB_FRONTEND_BASE` and `SERVER_BASE` are their containers' publish ports. 
 
 # How to import data
-Before batch importing the sample data, please make sure your data follow the pattern of DATA. 
+Before batch importing the sample data, please make sure your data follow the pattern. 
 
 To import, you can visit your frontend and sign in using Admin Account. You can find your auto-generated Admin Account on the server consoles, and its password will be rotated every 30 minutes. You can also retrieve the account by `GET {YOUR_SERVER}/localbackend/admin`. 
 

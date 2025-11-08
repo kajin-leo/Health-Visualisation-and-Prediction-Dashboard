@@ -12,7 +12,6 @@ services:
       - "${PGSQL_EXPORT_PORT}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DATA_USERNAME} -d ${DB_NAME}"]
       interval: 30s
